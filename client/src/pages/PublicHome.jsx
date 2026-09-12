@@ -212,6 +212,13 @@ export default function PublicHome() {
     }
   };
 
+  const sanitizeCompany = (comp) => {
+    if (!comp) return comp;
+    const phone = (!comp.phone || comp.phone.includes('94884') || comp.phone.includes('987')) ? '+91 87783 40454' : comp.phone;
+    const whatsapp = (!comp.whatsapp_number || comp.whatsapp_number.includes('94884') || comp.whatsapp_number.includes('987')) ? '8778340454' : comp.whatsapp_number;
+    return { ...comp, phone, whatsapp_number: whatsapp };
+  };
+
   // Fetch backend records
   const loadData = async () => {
     try {
@@ -223,7 +230,7 @@ export default function PublicHome() {
       ]);
 
       setData(prev => ({
-        company: compRes?.success && compRes.data ? { ...prev.company, ...compRes.data } : prev.company,
+        company: compRes?.success && compRes.data ? sanitizeCompany({ ...prev.company, ...compRes.data }) : sanitizeCompany(prev.company),
         services: servRes?.success && servRes.data?.length ? servRes.data : prev.services,
         gallery: galRes?.success && galRes.data?.length ? galRes.data : prev.gallery,
         jobs: jobsRes?.success && jobsRes.data?.length ? jobsRes.data : prev.jobs
@@ -250,7 +257,7 @@ export default function PublicHome() {
     });
 
     const unsubCompany = websiteService.subscribeCompanyProfile?.((company) => {
-      if (company) setData(prev => ({ ...prev, company: { ...prev.company, ...company } }));
+      if (company) setData(prev => ({ ...prev, company: sanitizeCompany({ ...prev.company, ...company }) }));
     });
 
     const handleScroll = () => {
@@ -266,7 +273,7 @@ export default function PublicHome() {
     };
   }, []);
 
-  const c = data.company;
+  const c = sanitizeCompany(data.company);
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
@@ -569,9 +576,6 @@ export default function PublicHome() {
                     <span className="text-cyan-400">“Innovate at every step”</span>
                   </div>
                 </div>
-                <div className="hidden sm:inline-flex px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-slate-200 text-[10.5px] font-mono font-medium uppercase tracking-wider">
-                  LAUNCHING SOON
-                </div>
               </div>
             </div>
           </div>
@@ -606,12 +610,12 @@ export default function PublicHome() {
           <div className="max-w-7xl mx-auto w-full relative z-20">
             <div className="w-full lg:w-[54%] xl:w-[50%] text-left">
               
-              {/* Launching 2026 Headquarters Badge */}
+              {/* Headquarters Badge */}
               <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 backdrop-blur-xl mb-6 shadow-sm">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-cyan-500" />
                   <span className="text-[11px] font-mono tracking-widest text-cyan-600 dark:text-cyan-400 font-bold uppercase">
-                    ESTABLISHED 2026 • LAUNCHING SOON
+                    ESTABLISHED 2026
                   </span>
                 </div>
                 <span className="text-slate-300 dark:text-slate-600">|</span>
@@ -665,13 +669,10 @@ export default function PublicHome() {
                     onError={(e) => { e.currentTarget.src = '/bg.png'; }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/20 pointer-events-none" />
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs font-mono text-white">
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-start text-xs font-mono text-white">
                     <span className="flex items-center gap-1.5 bg-slate-900/85 px-3 py-1 rounded-full border border-white/10 text-[11px]">
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                       KADAYAM HQ CAMPUS • 2026
-                    </span>
-                    <span className="text-slate-200 font-semibold text-[10px] bg-slate-900/85 px-2.5 py-1 rounded-full border border-white/10">
-                      LAUNCHING SOON
                     </span>
                   </div>
                 </div>
@@ -989,7 +990,7 @@ export default function PublicHome() {
             
             <div className="text-center max-w-3xl mx-auto mb-20">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono tracking-widest uppercase mb-4 font-bold">
-                ESTABLISHED 2026 • LAUNCHING SOON
+                ESTABLISHED 2026
               </div>
               <h2 className="text-3xl sm:text-5xl md:text-6xl font-black font-['Outfit'] text-slate-900 dark:text-white tracking-tight uppercase">
                 BUILT FOR PRECISION. <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">READY FOR SCALE.</span>
