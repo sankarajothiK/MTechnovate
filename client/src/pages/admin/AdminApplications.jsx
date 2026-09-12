@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, Search, Filter, Download, ExternalLink, Trash2, 
   CheckCircle2, XCircle, Clock, Calendar, Video, MapPin, 
-  Mail, Phone, FileText, AlertCircle, Loader2, Sparkles, Send, Eye, X 
+  Mail, Phone, FileText, AlertCircle, Loader2, Sparkles, Send, Eye, X, Building 
 } from 'lucide-react';
 import { api, applicationService } from '../../services/api';
+import { UICalendarPicker, UIClockPicker } from '../../components/admin/DateTimePickers';
 
 export default function AdminApplications() {
   const [applications, setApplications] = useState([]);
@@ -24,7 +25,7 @@ export default function AdminApplications() {
   const [shortlistModalApp, setShortlistModalApp] = useState(null);
   const [scheduleData, setScheduleData] = useState({
     interview_date: '',
-    interview_time: '',
+    interview_time: '11:00 AM IST',
     interview_mode: 'Online Video Conference',
     interview_meeting_link: 'https://meet.google.com/new',
     interview_notes: 'Please keep your IDE and GitHub repositories ready for technical code walkthrough.'
@@ -38,6 +39,12 @@ export default function AdminApplications() {
 
   // Selection / Offer modal state
   const [selectionModalApp, setSelectionModalApp] = useState(null);
+  const [selectionSchedule, setSelectionSchedule] = useState({
+    joining_date: '',
+    reporting_time: '09:30 AM IST',
+    joining_location: 'M TECHNOVATE Corporate HQ, M.G. Complex, Kadayam',
+    onboarding_notes: 'Please carry original academic credentials, government photo ID (Aadhar/PAN), and 2 passport photos.'
+  });
   const [sendSelectionEmail, setSendSelectionEmail] = useState(true);
   const [selectionSubmitting, setSelectionSubmitting] = useState(false);
 
@@ -109,7 +116,17 @@ export default function AdminApplications() {
       });
       setShortlistModalApp(app);
     } else if (newStatus === 'Selected') {
-      // Open offer modal
+      // Open offer modal with default joining schedule
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      const defaultJoining = nextWeek.toISOString().split('T')[0];
+
+      setSelectionSchedule({
+        joining_date: app.joining_date || defaultJoining,
+        reporting_time: app.reporting_time || '09:30 AM IST',
+        joining_location: app.joining_location || 'M TECHNOVATE Corporate HQ, M.G. Complex, Kadayam',
+        onboarding_notes: app.onboarding_notes || 'Please carry original academic credentials, government photo ID (Aadhar/PAN), and 2 passport photos.'
+      });
       setSelectionModalApp(app);
       setSendSelectionEmail(true);
     } else if (newStatus === 'Rejected') {
@@ -136,7 +153,7 @@ export default function AdminApplications() {
 
   // Submit Shortlist & Interview Schedule
   const handleConfirmShortlist = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!scheduleData.interview_date || !scheduleData.interview_time) {
       alert('Please select both Interview Date and Interview Time.');
       return;
@@ -152,7 +169,7 @@ export default function AdminApplications() {
       if (res.success) {
         setFeedback({
           type: 'success',
-          text: `Candidate successfully shortlisted! Interview scheduled & invitation email dispatched to ${shortlistModalApp.email}.`
+          text: `Candidate successfully shortlisted! Interview scheduled for ${scheduleData.interview_date} at ${scheduleData.interview_time} & invitation email dispatched to ${shortlistModalApp.email}.`
         });
         setShortlistModalApp(null);
         fetchApplications();
@@ -166,18 +183,25 @@ export default function AdminApplications() {
   };
 
   // Submit Selection & Formal Offer
-  const handleConfirmSelection = async () => {
+  const handleConfirmSelection = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!selectionSchedule.joining_date || !selectionSchedule.reporting_time) {
+      alert('Please select both Joining Date and Reporting Time.');
+      return;
+    }
+
     setSelectionSubmitting(true);
     try {
       const res = await api.updateApplicationStatus(selectionModalApp.id, {
         status: 'Selected',
-        send_selection_email: sendSelectionEmail
+        send_selection_email: sendSelectionEmail,
+        ...selectionSchedule
       });
 
       if (res.success) {
         setFeedback({
           type: 'success',
-          text: `Candidate successfully marked as Selected!${sendSelectionEmail ? ` Formal offer notification email dispatched to ${selectionModalApp.email}.` : ''}`
+          text: `Candidate successfully marked as Selected! Joining set for ${selectionSchedule.joining_date} at ${selectionSchedule.reporting_time}.${sendSelectionEmail ? ` Formal offer email dispatched to ${selectionModalApp.email}.` : ''}`
         });
         setSelectionModalApp(null);
         fetchApplications();
@@ -500,32 +524,21 @@ export default function AdminApplications() {
 
             <form onSubmit={handleConfirmShortlist} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Interview Date <span className="text-cyan-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={scheduleData.interview_date}
-                    onChange={(e) => setScheduleData({ ...scheduleData, interview_date: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
+                <UICalendarPicker
+                  label="Interview Date"
+                  required
+                  value={scheduleData.interview_date}
+                  onChange={(dateStr) => setScheduleData(prev => ({ ...prev, interview_date: dateStr }))}
+                  accentColor="emerald"
+                />
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Interview Time <span className="text-cyan-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 11:00 AM IST"
-                    value={scheduleData.interview_time}
-                    onChange={(e) => setScheduleData({ ...scheduleData, interview_time: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
+                <UIClockPicker
+                  label="Interview Time"
+                  required
+                  value={scheduleData.interview_time}
+                  onChange={(timeStr) => setScheduleData(prev => ({ ...prev, interview_time: timeStr }))}
+                  accentColor="emerald"
+                />
               </div>
 
               <div>
@@ -669,7 +682,7 @@ export default function AdminApplications() {
       {/* MODAL: Candidate Selection & Formal Offer */}
       {selectionModalApp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-dark-950/85 backdrop-blur-md">
-          <div className="relative w-full max-w-md bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="relative w-full max-w-lg bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             
             <button
               onClick={() => setSelectionModalApp(null)}
@@ -683,10 +696,12 @@ export default function AdminApplications() {
                 <Sparkles className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white">
-                  Confirm Candidate Selection
+                <span className="text-xs font-mono font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest">
+                  Candidate Selection
+                </span>
+                <h3 className="text-xl font-bold font-display text-slate-900 dark:text-white">
+                  Formal Offer & Joining Schedule
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Candidate: {selectionModalApp.full_name}</p>
               </div>
             </div>
 
@@ -696,55 +711,99 @@ export default function AdminApplications() {
               <div><strong>Email:</strong> <span className="font-mono text-purple-600 dark:text-purple-400">{selectionModalApp.email}</span></div>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Mark this candidate as <strong className="text-purple-600 dark:text-purple-400">Selected (Formal Offer)</strong>.
-            </p>
-
-            {/* Checkbox: Send Offer Email */}
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={sendSelectionEmail}
-                  onChange={(e) => setSendSelectionEmail(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-0"
+            <form onSubmit={handleConfirmSelection} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <UICalendarPicker
+                  label="Joining / Start Date"
+                  required
+                  value={selectionSchedule.joining_date}
+                  onChange={(dateStr) => setSelectionSchedule(prev => ({ ...prev, joining_date: dateStr }))}
+                  accentColor="purple"
                 />
-                <div className="text-xs">
-                  <span className="font-semibold text-slate-900 dark:text-white">Send Official Offer & Welcome Email</span>
-                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
-                    Dispatches celebratory offer letter email with joining next steps and HR contact details.
-                  </p>
-                </div>
-              </label>
-            </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setSelectionModalApp(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmSelection}
-                disabled={selectionSubmitting}
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 shadow-lg shadow-purple-600/30 disabled:opacity-50 transition-all"
-              >
-                {selectionSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing Offer...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Confirm Selection & Send Offer</span>
-                  </>
-                )}
-              </button>
-            </div>
+                <UIClockPicker
+                  label="Reporting Time"
+                  required
+                  value={selectionSchedule.reporting_time}
+                  onChange={(timeStr) => setSelectionSchedule(prev => ({ ...prev, reporting_time: timeStr }))}
+                  accentColor="purple"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Reporting Venue / Joining Location
+                </label>
+                <div className="relative">
+                  <Building className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={selectionSchedule.joining_location}
+                    onChange={(e) => setSelectionSchedule({ ...selectionSchedule, joining_location: e.target.value })}
+                    placeholder="e.g. M TECHNOVATE Corporate HQ, M.G. Complex, Kadayam"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Onboarding Notes & Instructions
+                </label>
+                <textarea
+                  rows="2"
+                  value={selectionSchedule.onboarding_notes}
+                  onChange={(e) => setSelectionSchedule({ ...selectionSchedule, onboarding_notes: e.target.value })}
+                  placeholder="e.g. Please carry original educational certificates, government photo ID, and bank details."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              {/* Checkbox: Send Offer Email */}
+              <div className="p-3.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-800/40">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sendSelectionEmail}
+                    onChange={(e) => setSendSelectionEmail(e.target.checked)}
+                    className="mt-0.5 rounded border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-0"
+                  />
+                  <div className="text-xs">
+                    <span className="font-semibold text-purple-900 dark:text-purple-300">Send Official Offer & Welcome Email</span>
+                    <p className="text-purple-700/80 dark:text-purple-400 text-[11px] mt-0.5">
+                      Dispatches celebratory offer letter email containing the selected role, joining date, reporting time, venue, and onboarding instructions to {selectionModalApp.email}.
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectionModalApp(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={selectionSubmitting}
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 shadow-lg shadow-purple-600/30 disabled:opacity-50 transition-all"
+                >
+                  {selectionSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Processing Offer & Email...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Confirm Selection & Send Offer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
 
           </div>
         </div>

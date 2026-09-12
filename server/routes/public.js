@@ -302,18 +302,17 @@ router.post('/send-status-email', async (req, res) => {
       templateTypes.push('rejection');
     }
 
-    const placeholders = templateTypes.map(() => '?').join(',');
-    // Duplicate prevention: check if this notification was already dispatched within 24 hours
-    const existingLog = db.prepare(`
+    // Debounce protection: prevent rapid double-clicks within 5 seconds on identical status
+    const recentLog = db.prepare(`
       SELECT id FROM email_logs 
-      WHERE recipient_email = ? AND template_type IN (${placeholders}) 
-      AND sent_at > datetime('now', '-1 day')
-    `).get(recipientEmail, ...templateTypes);
+      WHERE recipient_email = ? AND template_type = ? 
+      AND sent_at > datetime('now', '-5 seconds')
+    `).get(recipientEmail, templateTypes[0]);
 
-    if (existingLog) {
+    if (recentLog && !req.body.force_send) {
       return res.json({
         success: true,
-        message: 'Notification already dispatched within 24 hours. Duplication prevented.',
+        message: 'Notification already dispatched a few seconds ago.',
         skipped: true
       });
     }
@@ -323,8 +322,11 @@ router.post('/send-status-email', async (req, res) => {
     if (job_id) {
       job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(job_id);
     }
+    if (!job && applicant.job_title) {
+      job = db.prepare('SELECT * FROM jobs WHERE title LIKE ?').get(`%${applicant.job_title}%`);
+    }
     if (!job) {
-      job = { title: 'Applied Vacancy', department: 'Operations' };
+      job = { title: applicant.job_title || 'Applied Vacancy', department: 'Operations' };
     }
 
     let result = { success: true };
@@ -343,9 +345,49 @@ router.post('/send-status-email', async (req, res) => {
         schedule: schedule || { date: 'To be confirmed', time: 'To be confirmed', mode: 'Video Conference' }
       });
     } else if (norm === 'selected') {
-      result = await sendSelectionEmail({ applicant, job });
+      result = await sendSelectionEmail({ 
+        applicant, 
+        job,
+        schedule: schedule || {}
+      });
     } else if (norm === 'rejected') {
       result = await sendRejectionEmail({ applicant, job });
+    }
+
+    // Also update SQLite local DB if application exists
+    try {
+      const matchApp = db.prepare('SELECT id FROM applications WHERE id = ? OR LOWER(email) = LOWER(?) ORDER BY id DESC LIMIT 1').get(applicationId, recipientEmail);
+      if (matchApp) {
+        if (norm === 'shortlisted' && schedule) {
+          db.prepare(`
+            UPDATE applications SET 
+              status = 'Shortlisted',
+              interview_date = ?,
+              interview_time = ?,
+              interview_mode = ?,
+              interview_meeting_link = ?,
+              interview_notes = ?,
+              updated_at = datetime('now')
+            WHERE id = ?
+          `).run(schedule.date || '', schedule.time || '', schedule.mode || 'Online', schedule.meetingLink || '', schedule.notes || '', matchApp.id);
+        } else if (norm === 'selected') {
+          db.prepare(`
+            UPDATE applications SET 
+              status = 'Selected',
+              updated_at = datetime('now')
+            WHERE id = ?
+          `).run(matchApp.id);
+        } else if (norm === 'rejected') {
+          db.prepare(`
+            UPDATE applications SET 
+              status = 'Rejected',
+              updated_at = datetime('now')
+            WHERE id = ?
+          `).run(matchApp.id);
+        }
+      }
+    } catch (dbSyncErr) {
+      console.warn('SQLite status sync warning:', dbSyncErr.message);
     }
 
     res.json({

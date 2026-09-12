@@ -242,14 +242,29 @@ router.put('/applications/:id/status', requireAuth, async (req, res) => {
       send_rejection_email
     } = req.body;
 
-    const applicant = db.prepare('SELECT * FROM applications WHERE id = ?').get(id);
+    let applicant = db.prepare('SELECT * FROM applications WHERE id = ?').get(id);
+    if (!applicant && req.body.email) {
+      applicant = db.prepare('SELECT * FROM applications WHERE LOWER(email) = LOWER(?) ORDER BY id DESC LIMIT 1').get(req.body.email.trim());
+    }
+    if (!applicant && req.body.applicant?.email) {
+      applicant = db.prepare('SELECT * FROM applications WHERE LOWER(email) = LOWER(?) ORDER BY id DESC LIMIT 1').get(req.body.applicant.email.trim());
+    }
     if (!applicant) {
-      return res.status(404).json({ success: false, message: 'Application not found' });
+      // Create synthetic applicant object if only in Firestore
+      applicant = {
+        id,
+        full_name: req.body.full_name || req.body.applicant?.full_name || 'Candidate',
+        email: req.body.email || req.body.applicant?.email,
+        job_id: req.body.job_id || 1,
+        job_title: req.body.job_title || 'Applied Position'
+      };
     }
 
-    const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(applicant.job_id) || {
-      title: applicant.job_title,
-      department: 'Engineering'
+    const targetDbId = typeof applicant.id === 'number' ? applicant.id : null;
+
+    const job = (applicant.job_id ? db.prepare('SELECT * FROM jobs WHERE id = ?').get(applicant.job_id) : null) || {
+      title: applicant.job_title || req.body.job_title || 'Selected Role',
+      department: 'Engineering & Operations'
     };
 
     let emailResult = null;
@@ -263,27 +278,29 @@ router.put('/applications/:id/status', requireAuth, async (req, res) => {
         });
       }
 
-      // Update DB with interview details
-      const updateStmt = db.prepare(`
-        UPDATE applications SET 
-          status = 'Shortlisted',
-          interview_date = ?,
-          interview_time = ?,
-          interview_mode = ?,
-          interview_meeting_link = ?,
-          interview_notes = ?,
-          updated_at = datetime('now')
-        WHERE id = ?
-      `);
+      // Update DB with interview details if present in SQLite
+      if (targetDbId) {
+        const updateStmt = db.prepare(`
+          UPDATE applications SET 
+            status = 'Shortlisted',
+            interview_date = ?,
+            interview_time = ?,
+            interview_mode = ?,
+            interview_meeting_link = ?,
+            interview_notes = ?,
+            updated_at = datetime('now')
+          WHERE id = ?
+        `);
 
-      updateStmt.run(
-        interview_date,
-        interview_time,
-        interview_mode || 'Online',
-        interview_meeting_link || '',
-        interview_notes || '',
-        id
-      );
+        updateStmt.run(
+          interview_date,
+          interview_time,
+          interview_mode || 'Online',
+          interview_meeting_link || '',
+          interview_notes || '',
+          targetDbId
+        );
+      }
 
       // Trigger automated shortlist invitation email
       emailResult = await sendShortlistEmail({
@@ -298,39 +315,59 @@ router.put('/applications/:id/status', requireAuth, async (req, res) => {
         }
       });
     } else if (status === 'Rejected') {
-      const updateStmt = db.prepare(`
-        UPDATE applications SET 
-          status = 'Rejected',
-          updated_at = datetime('now')
-        WHERE id = ?
-      `);
-      updateStmt.run(id);
+      if (targetDbId) {
+        const updateStmt = db.prepare(`
+          UPDATE applications SET 
+            status = 'Rejected',
+            updated_at = datetime('now')
+          WHERE id = ?
+        `);
+        updateStmt.run(targetDbId);
+      }
 
       if (send_rejection_email) {
         emailResult = await sendRejectionEmail({ applicant, job });
       }
     } else if (status === 'Selected') {
-      const updateStmt = db.prepare(`
-        UPDATE applications SET 
-          status = 'Selected',
-          updated_at = datetime('now')
-        WHERE id = ?
-      `);
-      updateStmt.run(id);
+      const joining_date = req.body.joining_date || req.body.date || req.body.schedule?.joining_date || req.body.schedule?.date;
+      const reporting_time = req.body.reporting_time || req.body.time || req.body.schedule?.reporting_time || req.body.schedule?.time;
+      const joining_location = req.body.joining_location || req.body.mode || req.body.schedule?.joining_location || req.body.schedule?.mode;
+      const onboarding_notes = req.body.onboarding_notes || req.body.notes || req.body.schedule?.notes;
+
+      if (targetDbId) {
+        const updateStmt = db.prepare(`
+          UPDATE applications SET 
+            status = 'Selected',
+            updated_at = datetime('now')
+          WHERE id = ?
+        `);
+        updateStmt.run(targetDbId);
+      }
 
       const send_selection_email = req.body.send_selection_email !== false;
       if (send_selection_email) {
-        emailResult = await sendSelectionEmail({ applicant, job });
+        emailResult = await sendSelectionEmail({ 
+          applicant, 
+          job,
+          schedule: {
+            joining_date,
+            reporting_time,
+            joining_location,
+            notes: onboarding_notes
+          }
+        });
       }
     } else {
       // 'New' or 'Under Review'
-      const updateStmt = db.prepare(`
-        UPDATE applications SET 
-          status = ?,
-          updated_at = datetime('now')
-        WHERE id = ?
-      `);
-      updateStmt.run(status, id);
+      if (targetDbId) {
+        const updateStmt = db.prepare(`
+          UPDATE applications SET 
+            status = ?,
+            updated_at = datetime('now')
+          WHERE id = ?
+        `);
+        updateStmt.run(status, targetDbId);
+      }
     }
 
     const updatedApplicant = db.prepare('SELECT * FROM applications WHERE id = ?').get(id);

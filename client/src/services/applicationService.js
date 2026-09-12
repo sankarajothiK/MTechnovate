@@ -212,13 +212,30 @@ export const applicationService = {
     const interview_meeting_link = payload.interview_meeting_link || payload.schedule?.meetingLink || payload.schedule?.interview_meeting_link || '';
     const interview_notes = payload.interview_notes || payload.schedule?.notes || payload.schedule?.interview_notes || '';
 
-    const normalizedSchedule = (interview_date || interview_time) ? {
-      date: interview_date,
-      time: interview_time,
-      mode: interview_mode,
-      meetingLink: interview_meeting_link,
-      notes: interview_notes
-    } : (payload.schedule || null);
+    const joining_date = payload.joining_date || payload.schedule?.joining_date || payload.date || '';
+    const reporting_time = payload.reporting_time || payload.schedule?.reporting_time || payload.time || '';
+    const joining_location = payload.joining_location || payload.schedule?.joining_location || payload.mode || 'Kadayam Corporate HQ';
+    const onboarding_notes = payload.onboarding_notes || payload.schedule?.notes || payload.notes || '';
+
+    let normalizedSchedule = null;
+    if (status === 'Shortlisted') {
+      normalizedSchedule = {
+        date: interview_date,
+        time: interview_time,
+        mode: interview_mode,
+        meetingLink: interview_meeting_link,
+        notes: interview_notes
+      };
+    } else if (status === 'Selected') {
+      normalizedSchedule = {
+        joining_date,
+        reporting_time,
+        joining_location,
+        notes: onboarding_notes
+      };
+    } else if (payload.schedule) {
+      normalizedSchedule = payload.schedule;
+    }
 
     let docRef = doc(db, COLLECTION_NAME, String(id));
 
@@ -232,7 +249,7 @@ export const applicationService = {
           updatedAt: serverTimestamp()
         };
 
-        if (normalizedSchedule) {
+        if (status === 'Shortlisted') {
           updateFields.interview_schedule = normalizedSchedule;
           updateFields.interviewSchedule = normalizedSchedule;
           updateFields.interview_date = interview_date;
@@ -240,6 +257,12 @@ export const applicationService = {
           updateFields.interview_mode = interview_mode;
           updateFields.interview_meeting_link = interview_meeting_link;
           updateFields.interview_notes = interview_notes;
+        } else if (status === 'Selected') {
+          updateFields.joining_schedule = normalizedSchedule;
+          updateFields.joining_date = joining_date;
+          updateFields.reporting_time = reporting_time;
+          updateFields.joining_location = joining_location;
+          updateFields.onboarding_notes = onboarding_notes;
         }
         if (rejectionReason) {
           updateFields.rejection_reason = rejectionReason;
@@ -247,7 +270,7 @@ export const applicationService = {
 
         await updateDoc(docRef, updateFields);
 
-        // Send Email Notification via Secure Backend SMTP (with duplication check)
+        // Send Email Notification via Secure Backend SMTP
         const token = localStorage.getItem('m_tech_admin_token');
         await fetch('/api/send-status-email', {
           method: 'POST',
@@ -260,9 +283,11 @@ export const applicationService = {
             status,
             schedule: normalizedSchedule,
             rejectionReason,
+            force_send: true,
             applicant: {
               full_name: appData.full_name || appData.candidateName,
-              email: appData.email
+              email: appData.email,
+              job_title: appData.job_title || appData.jobTitle
             },
             job_id: appData.job_id || appData.jobId
           })
@@ -276,7 +301,12 @@ export const applicationService = {
               'Content-Type': 'application/json',
               ...(token ? { Authorization: `Bearer ${token}` } : {})
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+              ...payload,
+              email: appData.email,
+              full_name: appData.full_name || appData.candidateName,
+              job_title: appData.job_title || appData.jobTitle
+            })
           }).catch(() => {});
         } catch {}
 
