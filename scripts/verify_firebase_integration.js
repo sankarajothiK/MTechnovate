@@ -92,7 +92,7 @@ async function runVerification() {
   formPayload.append('job_id', targetJobId);
   formPayload.append('full_name', 'Sundar Pichai');
   formPayload.append('email', testCandidateEmail);
-  formPayload.append('phone', '+91 98765 43210');
+  formPayload.append('phone', '+91 87783 40454');
   formPayload.append('cover_letter', 'Applying for Data Processing Executive with Firebase verification.');
   const blob = new Blob([fs.readFileSync(mockResumePath)], { type: 'application/pdf' });
   formPayload.append('resume', blob, 'sundar_resume.pdf');
@@ -110,7 +110,7 @@ async function runVerification() {
   dupPayload.append('job_id', targetJobId);
   dupPayload.append('full_name', 'Sundar Pichai');
   dupPayload.append('email', testCandidateEmail);
-  dupPayload.append('phone', '+91 98765 43210');
+  dupPayload.append('phone', '+91 87783 40454');
   dupPayload.append('resume', blob, 'sundar_resume.pdf');
 
   const dupRes = await fetch(`${BASE_URL}/api/applications`, {

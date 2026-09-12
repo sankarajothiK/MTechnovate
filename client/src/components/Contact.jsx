@@ -269,7 +269,7 @@ export default function Contact({ company }) {
                     </label>
                     <input
                       type="tel"
-                      placeholder="e.g. +91 98765 43210"
+                      placeholder="e.g. +91 87783 40454"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:border-indigo-500 transition-colors"

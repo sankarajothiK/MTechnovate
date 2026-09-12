@@ -268,14 +268,14 @@ export default function PublicHome() {
           ------------------------------------------------------------- */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled 
-          ? 'bg-white/90 dark:bg-[#030712]/90 backdrop-blur-2xl border-b border-slate-200 dark:border-white/10 shadow-lg py-3' 
-          : 'bg-white/40 dark:bg-transparent backdrop-blur-md border-b border-slate-200/50 dark:border-transparent py-4'
+          ? 'bg-white/95 dark:bg-[#030712]/95 backdrop-blur-2xl border-b border-slate-200 dark:border-white/10 shadow-lg py-2.5 sm:py-3' 
+          : 'bg-white/60 dark:bg-transparent backdrop-blur-md border-b border-slate-200/50 dark:border-transparent py-3 sm:py-4'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between">
           
           {/* Official Brand Logo */}
-          <a href="#Home" className="flex items-center gap-3.5 group" data-testid="brand-logo">
-            <div className="w-11 h-11 rounded-xl p-1 bg-white border border-cyan-400/60 shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden shrink-0">
+          <a href="#Home" className="flex items-center gap-2.5 sm:gap-3.5 group min-w-0" data-testid="brand-logo">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl p-1 bg-white border border-cyan-400/60 shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden shrink-0">
               <img 
                 src="/logo.jpg" 
                 alt="M TECHNOVATE SOLUTIONS" 
@@ -283,17 +283,17 @@ export default function PublicHome() {
                 onError={(e) => { e.target.src = '/logo.jpg'; }}
               />
             </div>
-            <div className="flex flex-col">
-              <span className="font-['Outfit'] font-black tracking-wider text-base md:text-lg text-slate-900 dark:text-white leading-none">
+            <div className="flex flex-col min-w-0 truncate">
+              <span className="font-['Outfit'] font-black tracking-wider text-sm sm:text-base md:text-lg text-slate-900 dark:text-white leading-tight truncate">
                 M TECH<span className="text-cyan-500 dark:text-cyan-400">NOVATE</span>
               </span>
-              <span className="text-[8.5px] font-mono tracking-[0.24em] text-cyan-600 dark:text-cyan-400 font-bold uppercase mt-1">
+              <span className="hidden sm:block text-[8.5px] font-mono tracking-[0.24em] text-cyan-600 dark:text-cyan-400 font-bold uppercase mt-0.5 truncate">
                 INNOVATE AT EVERY STEP
               </span>
             </div>
           </a>
 
-          {/* Exact 6 Nav Links */}
+          {/* Exact 6 Nav Links (Desktop) */}
           <nav className="hidden lg:flex items-center gap-7 text-xs font-mono tracking-widest text-slate-700 dark:text-slate-300 uppercase font-semibold">
             {navItems.map(item => (
               <a 
@@ -308,23 +308,23 @@ export default function PublicHome() {
           </nav>
 
           {/* Right Header Action Area */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
             
-            {/* Theme Toggle Button */}
+            {/* Responsive Theme Toggle Button (Compact 36px on mobile, full pill on desktop) */}
             <ThemeToggle />
 
-            {/* Quick Contact Action Button */}
+            {/* Quick Contact Action Button (Tablet & Desktop) */}
             <a 
               href="#Contact" 
-              className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-['Outfit'] font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-md hover:shadow-cyan-500/30 hover:scale-105 transition-all"
+              className="hidden md:inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-['Outfit'] font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-md hover:shadow-cyan-500/30 hover:scale-105 transition-all shrink-0"
             >
               Partner With Us <ArrowUpRight size={14} />
             </a>
 
-            {/* Admin Portal Link */}
+            {/* Admin Portal Link (Desktop) */}
             <Link 
               to="/admin" 
-              className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="hidden lg:inline-flex p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
               title="Admin Portal"
               data-testid="nav-admin-link"
             >
@@ -334,39 +334,77 @@ export default function PublicHome() {
             {/* Mobile Hamburger Toggle */}
             <button 
               onClick={() => setMenu(!menu)} 
-              className="lg:hidden p-2 text-slate-800 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400"
+              className="lg:hidden p-2 rounded-xl text-slate-800 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus:outline-none"
               aria-label="Toggle Navigation Menu"
               data-testid="mobile-menu-button"
             >
-              {menu ? <X size={24} /> : <Menu size={24} />}
+              {menu ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
 
         </div>
 
         {/* Mobile Navigation Dropdown */}
-        {menu && (
-          <div className="lg:hidden px-6 py-6 bg-white/95 dark:bg-[#030712]/95 backdrop-blur-2xl border-b border-slate-200 dark:border-white/10 flex flex-col gap-4 text-xs font-mono uppercase tracking-widest text-slate-800 dark:text-slate-200 shadow-2xl">
-            {navItems.map(item => (
-              <a 
-                key={item.name} 
-                href={item.href} 
-                onClick={() => setMenu(false)} 
-                className="hover:text-cyan-600 dark:hover:text-cyan-400 py-1.5 border-b border-slate-100 dark:border-white/5"
-              >
-                {item.name}
-              </a>
-            ))}
-            <a 
-              href="#Contact" 
-              onClick={() => setMenu(false)} 
-              className="text-cyan-600 dark:text-cyan-400 py-2 font-bold flex items-center justify-between"
+        <AnimatePresence>
+          {menu && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25 }}
+              className="lg:hidden overflow-hidden bg-white/98 dark:bg-[#030712]/98 backdrop-blur-2xl border-b border-slate-200 dark:border-white/10 shadow-2xl"
             >
-              <span>Partner With Us</span>
-              <ArrowRight size={14} />
-            </a>
-          </div>
-        )}
+              <div className="px-5 py-6 space-y-4">
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono uppercase tracking-wider text-slate-800 dark:text-slate-200 font-semibold">
+                  {navItems.map(item => (
+                    <a 
+                      key={item.name} 
+                      href={item.href} 
+                      onClick={() => setMenu(false)} 
+                      className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400 border border-slate-200/70 dark:border-white/5 transition-all text-center"
+                    >
+                      {item.name}
+                    </a>
+                  ))}
+                </div>
+
+                {/* Mobile Quick Action Connect Dock */}
+                <div className="pt-3 border-t border-slate-100 dark:border-white/10 space-y-2.5">
+                  <a
+                    href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMenu(false)}
+                    className="w-full py-3 px-4 rounded-xl font-['Outfit'] font-bold text-xs uppercase tracking-wider bg-[#25D366] text-white shadow-md hover:bg-[#20bd5a] flex items-center justify-center gap-2 transition-all"
+                  >
+                    <WhatsAppIcon className="w-4 h-4 fill-current" />
+                    <span>WhatsApp: +91 87783 40454</span>
+                  </a>
+
+                  <div className="flex items-center gap-2">
+                    <a 
+                      href="#Contact" 
+                      onClick={() => setMenu(false)} 
+                      className="flex-1 py-3 px-4 rounded-xl font-['Outfit'] font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-md flex items-center justify-center gap-2 transition-all"
+                    >
+                      <span>Partner With Us</span>
+                      <ArrowRight size={14} />
+                    </a>
+
+                    <Link
+                      to="/admin"
+                      onClick={() => setMenu(false)}
+                      className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-cyan-500 transition-colors flex items-center justify-center"
+                      title="Admin Portal"
+                    >
+                      <Shield size={16} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main>
@@ -374,7 +412,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 1: HERO SECTION (Digital Operations Universe + Image Showcase)
             ------------------------------------------------------------- */}
-        <section id="Home" className="relative min-h-screen flex flex-col justify-center items-center pt-32 pb-20 px-6 md:px-12 overflow-hidden">
+        <section id="Home" className="relative min-h-screen flex flex-col justify-center items-center pt-28 pb-16 px-4 sm:px-6 md:px-12 overflow-hidden">
           
           {/* Generative Canvas Background */}
           <DigitalUniverseCanvas />
@@ -505,10 +543,10 @@ export default function PublicHome() {
               </p>
 
               {/* Primary & Secondary CTAs */}
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 <a 
                   href="#Contact" 
-                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-lg hover:shadow-cyan-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-lg hover:shadow-cyan-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-center"
                   data-testid="hero-services-button"
                 >
                   Let’s Work Together <ArrowRight size={16} />
@@ -516,7 +554,7 @@ export default function PublicHome() {
 
                 <a 
                   href="#Services" 
-                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider border border-slate-300 dark:border-white/15 bg-white/70 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white backdrop-blur-xl transition-all"
+                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider border border-slate-300 dark:border-white/15 bg-white/70 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white backdrop-blur-xl transition-all flex items-center justify-center text-center"
                   data-testid="hero-contact-button"
                 >
                   Explore Our Services
@@ -554,12 +592,12 @@ export default function PublicHome() {
                     { name: 'PROCESS MANAGEMENT', icon: Cpu, color: '#ec4899' },
                     { name: 'BACK-OFFICE SUPPORT', icon: FileText, color: '#3b82f6' },
                     { name: 'QUALITY ASSURANCE', icon: ShieldCheck, color: '#10b981' }
-                  ].map((dock) => {
+                  ].map((dock, idx) => {
                     const Icon = dock.icon;
                     return (
                       <div 
                         key={dock.name}
-                        className="p-3 rounded-xl bg-slate-100/60 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/5 hover:border-cyan-500/40 transition-all flex flex-col items-center text-center group cursor-default"
+                        className={`p-3 rounded-xl bg-slate-100/60 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/5 hover:border-cyan-500/40 transition-all flex flex-col items-center text-center group cursor-default ${idx === 4 ? 'col-span-2 sm:col-span-1 xl:col-span-1' : ''}`}
                       >
                         <span 
                           className="w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 transition-transform group-hover:scale-110"
@@ -584,7 +622,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 2: ABOUT US (#About) — Editorial Split with CEO Photo
             ------------------------------------------------------------- */}
-        <section id="About" className="relative py-28 px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
+        <section id="About" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -676,7 +714,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 3: SERVICES (#Services) — 6 Glassmorphism Panels
             ------------------------------------------------------------- */}
-        <section id="Services" className="relative py-28 px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
+        <section id="Services" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-20">
@@ -765,7 +803,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 4: GALLERY (#Gallery) — Interactive Image Showcase
             ------------------------------------------------------------- */}
-        <section id="Gallery" className="relative py-28 px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
+        <section id="Gallery" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -826,7 +864,7 @@ export default function PublicHome() {
             ------------------------------------------------------------- */}
         <NetworkPipeline />
 
-        <section className="relative py-24 px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
+        <section className="relative py-16 sm:py-24 px-4 sm:px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs font-mono uppercase tracking-widest text-cyan-600 dark:text-cyan-400 font-bold">
@@ -852,7 +890,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 6: PERFORMANCE (#Performance)
             ------------------------------------------------------------- */}
-        <section id="Performance" className="relative py-28 px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
+        <section id="Performance" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-20">
@@ -896,7 +934,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 7: CAREERS (#Careers) — ATS Job Openings
             ------------------------------------------------------------- */}
-        <section id="Careers" className="relative py-28 px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
+        <section id="Careers" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
           <div className="max-w-6xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -916,7 +954,7 @@ export default function PublicHome() {
                 data.jobs.map((job, idx) => (
                   <div 
                     key={job.id}
-                    className="p-6 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 hover:border-cyan-500 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md"
+                    className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 hover:border-cyan-500 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md"
                     data-testid={`job-card-${idx}`}
                   >
                     <div>
@@ -924,7 +962,7 @@ export default function PublicHome() {
                         <span className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400">0{idx + 1}</span>
                         <h3 className="text-lg font-bold font-['Outfit'] text-slate-900 dark:text-white">{job.title}</h3>
                       </div>
-                      <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 pl-7">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 pl-7">
                         <span>{job.department}</span>
                         <span>•</span>
                         <span>{job.location}</span>
@@ -935,7 +973,7 @@ export default function PublicHome() {
 
                     <button 
                       onClick={() => setSelectedJob(job)}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-xs font-['Outfit'] font-bold uppercase tracking-wider bg-slate-900 hover:bg-cyan-500 text-white transition-all self-start sm:self-auto cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-xs font-['Outfit'] font-bold uppercase tracking-wider bg-slate-900 hover:bg-cyan-500 text-white transition-all self-stretch sm:self-auto cursor-pointer"
                       data-testid={`job-apply-button-${idx}`}
                     >
                       Apply Now <ArrowUpRight size={14} />
@@ -955,7 +993,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 8: CONTACT (#Contact)
             ------------------------------------------------------------- */}
-        <section id="Contact" className="relative py-32 px-6 md:px-12 bg-white dark:bg-black border-t border-slate-200 dark:border-white/10 text-center">
+        <section id="Contact" className="relative py-20 sm:py-32 px-4 sm:px-6 md:px-12 bg-white dark:bg-black border-t border-slate-200 dark:border-white/10 text-center">
           
           <div className="max-w-4xl mx-auto relative z-10">
             
@@ -974,7 +1012,7 @@ export default function PublicHome() {
               Let’s build a smarter, faster and more reliable way to run your business.
             </p>
 
-            <div className="mt-12 max-w-xl mx-auto p-8 rounded-3xl bg-slate-50 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl text-left">
+            <div className="mt-12 max-w-xl mx-auto p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-50 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl text-left">
               <form onSubmit={handleContactSubmit} className="space-y-4" data-testid="contact-form">
                 <div>
                   <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">Full Name</label>
@@ -1084,7 +1122,7 @@ export default function PublicHome() {
       {/* -------------------------------------------------------------
           FOOTER
           ------------------------------------------------------------- */}
-      <footer className="py-16 px-6 md:px-12 bg-slate-900 dark:bg-black text-slate-400 text-xs border-t border-slate-200 dark:border-white/10">
+      <footer className="py-12 sm:py-16 px-4 sm:px-6 md:px-12 bg-slate-900 dark:bg-black text-slate-400 text-xs border-t border-slate-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
           
           <div className="md:col-span-2">
@@ -1226,7 +1264,7 @@ export default function PublicHome() {
       <AnimatePresence>
         {selectedService && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setSelectedService(null)}>
-            <div className="w-full max-w-lg p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-cyan-500/40 relative shadow-2xl" onClick={e => e.stopPropagation()} data-testid="modal">
+            <div className="w-full max-w-lg p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-cyan-500/40 relative shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()} data-testid="modal">
               <button 
                 onClick={() => setSelectedService(null)} 
                 className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5"
@@ -1292,7 +1330,7 @@ export default function PublicHome() {
         href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services."
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#25D366] text-white shadow-2xl hover:shadow-[#25D366]/50 hover:scale-105 active:scale-95 transition-all duration-300 group cursor-pointer border border-white/20"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2.5 p-3 sm:px-4 sm:py-3 rounded-full bg-[#25D366] text-white shadow-2xl hover:shadow-[#25D366]/50 hover:scale-105 active:scale-95 transition-all duration-300 group cursor-pointer border border-white/20"
         aria-label="Chat with us on WhatsApp"
         title="WhatsApp: +91 87783 40454"
       >
@@ -1345,7 +1383,7 @@ function JobModal({ job, close, onApplied }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={close}>
-      <div className="w-full max-w-lg p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 relative shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()} data-testid="modal">
+      <div className="w-full max-w-lg p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 relative shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()} data-testid="modal">
         <button 
           onClick={close} 
           className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5"
@@ -1395,7 +1433,7 @@ function JobModal({ job, close, onApplied }) {
 
               <div>
                 <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 uppercase mb-1">Phone Number</label>
-                <input name="phone" required placeholder="+91 94884 12345" className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500" data-testid="application-phone-input" />
+                <input name="phone" required placeholder="e.g. +91 87783 40454" className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500" data-testid="application-phone-input" />
               </div>
 
               <div>

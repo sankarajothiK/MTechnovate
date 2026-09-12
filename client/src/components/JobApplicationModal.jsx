@@ -193,7 +193,7 @@ export default function JobApplicationModal({ job, onClose, onSuccess }) {
                     <input
                       type="tel"
                       required
-                      placeholder="e.g. +91 98765 43210"
+                      placeholder="e.g. +91 87783 40454"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:border-brand-500 transition-colors"

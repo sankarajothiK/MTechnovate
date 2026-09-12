@@ -201,7 +201,7 @@ export function UICalendarPicker({
 
       {/* Dropdown Calendar Popup */}
       {isOpen && (
-        <div className="absolute left-0 top-full mt-2 z-50 w-72 sm:w-80 bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute left-0 top-full mt-2 z-50 w-72 sm:w-80 max-w-[calc(100vw-48px)] bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
           {/* Header Month / Year controls */}
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-slate-800">
             <button
@@ -463,7 +463,7 @@ export function UIClockPicker({
 
       {/* Dropdown Clock UI */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 top-full mt-2 z-50 w-72 sm:w-80 bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 sm:left-0 top-full mt-2 z-50 w-72 sm:w-80 max-w-[calc(100vw-48px)] bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
           
           {/* Digital Clock Banner */}
           <div className="p-3 rounded-xl bg-slate-900 text-white flex items-center justify-between mb-4 shadow-inner">

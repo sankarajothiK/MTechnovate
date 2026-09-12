@@ -44,8 +44,8 @@ export default function AdminLayout() {
 
       {/* Sidebar (Clean dark navy for high contrast grounding) */}
       <aside 
-        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-slate-900 dark:bg-[#060B18] border-r border-slate-800 dark:border-white/10 transition-all duration-300 ${
-          collapsed ? 'w-20' : 'w-64'
+        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-slate-900 dark:bg-[#060B18] border-r border-slate-800 dark:border-white/10 transition-all duration-300 w-72 max-w-[85vw] lg:w-64 ${
+          collapsed ? 'lg:w-20' : 'lg:w-64'
         } ${mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Brand Header */}
@@ -54,7 +54,7 @@ export default function AdminLayout() {
             <div className="w-10 h-10 rounded-xl overflow-hidden bg-white p-0.5 border border-cyan-400/40 shadow-sm shrink-0">
               <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain" />
             </div>
-            {!collapsed && (
+            {(!collapsed || mobileDrawerOpen) && (
               <div className="flex flex-col truncate">
                 <span className="font-['Outfit'] font-bold text-sm tracking-wider text-white truncate">
                   M TECH<span className="text-cyan-400">NOVATE</span>
@@ -100,11 +100,11 @@ export default function AdminLayout() {
                   isActive
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25 font-bold'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
-                } ${collapsed ? 'justify-center px-2' : ''}`}
+                } ${collapsed ? 'lg:justify-center lg:px-2' : ''}`}
                 title={collapsed ? item.name : undefined}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                {!collapsed && <span className="truncate">{item.name}</span>}
+                <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{item.name}</span>
               </NavLink>
             );
           })}
@@ -112,7 +112,7 @@ export default function AdminLayout() {
 
         {/* User Info & Logout */}
         <div className="p-3 border-t border-slate-800 shrink-0 space-y-2">
-          {!collapsed && (
+          {(!collapsed || mobileDrawerOpen) && (
             <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 font-bold text-xs">
                 <User className="w-4 h-4" />
@@ -131,12 +131,12 @@ export default function AdminLayout() {
           <button
             onClick={handleLogout}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors ${
-              collapsed ? 'justify-center px-2' : ''
+              collapsed ? 'lg:justify-center lg:px-2' : ''
             }`}
             title="Logout"
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            {!collapsed && <span>Sign Out</span>}
+            <span className={collapsed ? 'lg:hidden' : ''}>Sign Out</span>
           </button>
         </div>
 
@@ -146,17 +146,19 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-100/70 dark:bg-[#030712] transition-colors">
         
         {/* Topbar */}
-        <header className="h-16 bg-white/90 dark:bg-[#060B18]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 shadow-xs transition-colors">
-          <div className="flex items-center gap-3">
+        <header className="h-16 bg-white/90 dark:bg-[#060B18]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-3 sm:px-6 lg:px-8 shrink-0 shadow-xs transition-colors">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               onClick={() => setMobileDrawerOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-cyan-500"
+              className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-cyan-500 shrink-0"
+              aria-label="Open sidebar navigation"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold font-['Outfit'] text-slate-900 dark:text-white">
-                Operations & ATS Administration
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="text-sm sm:text-base md:text-lg font-bold font-['Outfit'] text-slate-900 dark:text-white truncate">
+                <span className="sm:hidden">ATS Console</span>
+                <span className="hidden sm:inline">Operations & ATS Administration</span>
               </h1>
               <span className="hidden md:inline-flex px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-600 dark:text-cyan-400 text-[10px] font-mono font-bold uppercase">
                 Console
@@ -164,15 +166,16 @@ export default function AdminLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
             <ThemeToggle />
 
             <Link
               to="/"
               target="_blank"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 p-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors shadow-xs"
+              title="View Public Website"
             >
-              <span>View Public Website</span>
+              <span className="hidden sm:inline">View Public Website</span>
               <ExternalLink className="w-3.5 h-3.5 text-cyan-500" />
             </Link>
 
@@ -184,7 +187,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Content View */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
           <Outlet />
         </main>
 
