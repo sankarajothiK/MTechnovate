@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // Public Media: Anyone can view, only admin can upload or delete
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if isAdmin();
+    }
+    match /services/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if isAdmin();
+    }
+    match /website/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if isAdmin();
+    }
+
+    // Candidate Resumes: Anyone can upload a resume (<15MB, PDF/DOC/DOCX), only admin can read or delete
+    match /applications/resumes/{fileName} {
+      allow write: if request.resource.size < 15 * 1024 * 1024
+                   && (request.resource.contentType.matches('application/pdf')
+                       || request.resource.contentType.matches('application/msword')
+                       || request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document'));
+      allow read, delete: if isAdmin();
+    }
+  }
+}

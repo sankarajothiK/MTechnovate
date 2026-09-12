@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null;
+    }
+    
+    // Public Content: Anyone can read, only authenticated admin can write
+    match /jobs/{jobId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /gallery/{galleryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /websiteContent/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Applications: Anyone can submit new application with status 'Applied', only admin can view/manage
+    match /applications/{appId} {
+      allow create: if request.resource.data.status == 'Applied' 
+                    && request.resource.data.email != null 
+                    && request.resource.data.job_id != null;
+      allow read, update, delete: if isAdmin();
+    }
+    
+    // Inquiries: Anyone can submit contact messages, only admin can view/manage
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.email != null;
+      allow read, update, delete: if isAdmin();
+    }
+    
+    // Settings, Email Templates & Audit Logs: Admin only
+    match /emailTemplates/{templateId} {
+      allow read, write: if isAdmin();
+    }
+    match /emailLogs/{logId} {
+      allow read, write: if isAdmin();
+    }
+    match /settings/{settingId} {
+      allow read, write: if isAdmin();
+    }
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

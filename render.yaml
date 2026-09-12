@@ -1,0 +1,28 @@
+﻿services:
+  - type: web
+    name: m-technovate
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.13.1
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        value: mtechnovatesolutions@gmail.com
+      - key: SMTP_PASS
+        value: gdnpjxqbjyodgedu
+      - key: SMTP_FROM_EMAIL
+        value: mtechnovatesolutions@gmail.com
+      - key: SMTP_FROM_NAME
+        value: M TECHNOVATE Recruitment
+      - key: FIREBASE_PROJECT_ID
+        value: m-technovate-attendance
