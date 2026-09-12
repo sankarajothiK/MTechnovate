@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -25,6 +25,18 @@ export default function AdminLayout() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileDrawerOpen]);
 
   const handleLogout = () => {
     logout();

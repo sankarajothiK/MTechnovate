@@ -8,7 +8,7 @@ import {
   Activity, Quote, Bot, Cpu, Zap, CheckCircle2, 
   ChevronRight, ArrowRight, Shield, Award, Users, 
   Smile, Briefcase, Radio, Globe, Clock, Check, Star,
-  Maximize2, Eye, Compass
+  Maximize2, Eye, Compass, Building2
 } from 'lucide-react';
 import { api, jobService, serviceService, galleryService, websiteService } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
@@ -173,13 +173,44 @@ export default function PublicHome() {
 
   // Exact 6 navbar items specified by the user
   const navItems = [
-    { name: 'Home', href: '#Home' },
-    { name: 'About Us', href: '#About' },
-    { name: 'Services', href: '#Services' },
-    { name: 'Gallery', href: '#Gallery' },
-    { name: 'Careers', href: '#Careers' },
-    { name: 'Contact', href: '#Contact' }
+    { name: 'Home', href: '#Home', icon: Compass, label: '01' },
+    { name: 'About Us', href: '#About', icon: Building2, label: '02' },
+    { name: 'Services', href: '#Services', icon: Layers, label: '03' },
+    { name: 'Gallery', href: '#Gallery', icon: Eye, label: '04' },
+    { name: 'Careers', href: '#Careers', icon: Briefcase, label: '05' },
+    { name: 'Contact', href: '#Contact', icon: Mail, label: '06' }
   ];
+
+  // Lock body scroll when mobile menu drawer is open
+  useEffect(() => {
+    if (menu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menu]);
+
+  // Robust smooth scroll handler with sticky header offset (75px)
+  const handleNavClick = (e, href) => {
+    if (!href || !href.startsWith('#')) return;
+    if (e && e.preventDefault) e.preventDefault();
+    setMenu(false);
+    const targetId = href.replace('#', '');
+    const element = document.getElementById(targetId);
+    if (element) {
+      const headerOffset = 75;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      window.history.pushState(null, '', href);
+    }
+  };
 
   // Fetch backend records
   const loadData = async () => {
@@ -274,7 +305,12 @@ export default function PublicHome() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between">
           
           {/* Official Brand Logo */}
-          <a href="#Home" className="flex items-center gap-2.5 sm:gap-3.5 group min-w-0" data-testid="brand-logo">
+          <a 
+            href="#Home" 
+            onClick={(e) => handleNavClick(e, '#Home')}
+            className="flex items-center gap-2.5 sm:gap-3.5 group min-w-0 cursor-pointer" 
+            data-testid="brand-logo"
+          >
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl p-1 bg-white border border-cyan-400/60 shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden shrink-0">
               <img 
                 src="/logo.jpg" 
@@ -299,7 +335,8 @@ export default function PublicHome() {
               <a 
                 key={item.name} 
                 href={item.href} 
-                className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors py-1 relative group"
+                onClick={(e) => handleNavClick(e, item.href)}
+                className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors py-1 relative group cursor-pointer"
               >
                 {item.name}
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-cyan-500 transition-all duration-300 group-hover:w-full" />
@@ -316,7 +353,8 @@ export default function PublicHome() {
             {/* Quick Contact Action Button (Tablet & Desktop) */}
             <a 
               href="#Contact" 
-              className="hidden md:inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-['Outfit'] font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-md hover:shadow-cyan-500/30 hover:scale-105 transition-all shrink-0"
+              onClick={(e) => handleNavClick(e, '#Contact')}
+              className="hidden md:inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-['Outfit'] font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-md hover:shadow-cyan-500/30 hover:scale-105 transition-all shrink-0 cursor-pointer"
             >
               Partner With Us <ArrowUpRight size={14} />
             </a>
@@ -336,6 +374,7 @@ export default function PublicHome() {
               onClick={() => setMenu(!menu)} 
               className="lg:hidden p-2 rounded-xl text-slate-800 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus:outline-none"
               aria-label="Toggle Navigation Menu"
+              aria-expanded={menu}
               data-testid="mobile-menu-button"
             >
               {menu ? <X size={22} /> : <Menu size={22} />}
@@ -343,76 +382,129 @@ export default function PublicHome() {
           </div>
 
         </div>
-
-        {/* Mobile Navigation Dropdown */}
-        <AnimatePresence>
-          {menu && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-              className="lg:hidden overflow-hidden bg-white/98 dark:bg-[#030712]/98 backdrop-blur-2xl border-b border-slate-200 dark:border-white/10 shadow-2xl"
-            >
-              <div className="px-5 py-6 space-y-4">
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono uppercase tracking-wider text-slate-800 dark:text-slate-200 font-semibold">
-                  {navItems.map(item => (
-                    <a 
-                      key={item.name} 
-                      href={item.href} 
-                      onClick={() => setMenu(false)} 
-                      className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400 border border-slate-200/70 dark:border-white/5 transition-all text-center"
-                    >
-                      {item.name}
-                    </a>
-                  ))}
-                </div>
-
-                {/* Mobile Quick Action Connect Dock */}
-                <div className="pt-3 border-t border-slate-100 dark:border-white/10 space-y-2.5">
-                  <a
-                    href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMenu(false)}
-                    className="w-full py-3 px-4 rounded-xl font-['Outfit'] font-bold text-xs uppercase tracking-wider bg-[#25D366] text-white shadow-md hover:bg-[#20bd5a] flex items-center justify-center gap-2 transition-all"
-                  >
-                    <WhatsAppIcon className="w-4 h-4 fill-current" />
-                    <span>WhatsApp: +91 87783 40454</span>
-                  </a>
-
-                  <div className="flex items-center gap-2">
-                    <a 
-                      href="#Contact" 
-                      onClick={() => setMenu(false)} 
-                      className="flex-1 py-3 px-4 rounded-xl font-['Outfit'] font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-md flex items-center justify-center gap-2 transition-all"
-                    >
-                      <span>Partner With Us</span>
-                      <ArrowRight size={14} />
-                    </a>
-
-                    <Link
-                      to="/admin"
-                      onClick={() => setMenu(false)}
-                      className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-cyan-500 transition-colors flex items-center justify-center"
-                      title="Admin Portal"
-                    >
-                      <Shield size={16} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </header>
+
+      {/* -------------------------------------------------------------
+          MOBILE NAVIGATION DRAWER & BACKDROP (Off-Canvas)
+          100% Reliable across all mobile devices & browsers
+          ------------------------------------------------------------- */}
+      {/* Dimmed backdrop overlay */}
+      <div 
+        className={`fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[60] transition-opacity duration-300 lg:hidden ${
+          menu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setMenu(false)}
+        aria-hidden="true"
+      />
+
+      {/* Slide-out Drawer */}
+      <aside
+        id="mobile-nav-drawer"
+        className={`fixed top-0 right-0 bottom-0 w-full sm:w-80 max-w-[85vw] bg-white dark:bg-[#060B18] z-[70] shadow-2xl border-l border-slate-200 dark:border-white/10 flex flex-col justify-between p-5 transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${
+          menu ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+        }`}
+        aria-label="Mobile Navigation"
+      >
+        <div>
+          {/* Top Bar: Brand Logo & Close Button */}
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg p-0.5 bg-white border border-cyan-400/60 shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-['Outfit'] font-black text-sm text-slate-900 dark:text-white tracking-wider leading-tight">
+                  M TECH<span className="text-cyan-500">NOVATE</span>
+                </span>
+                <span className="text-[7.5px] font-mono tracking-widest text-cyan-600 dark:text-cyan-400 font-bold uppercase">
+                  INNOVATE AT EVERY STEP
+                </span>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setMenu(false)}
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus:outline-none"
+              aria-label="Close navigation"
+              data-testid="close-mobile-menu"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Navigation Section Links */}
+          <div className="py-5 space-y-1.5">
+            <div className="text-[10px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase px-3 mb-2 font-bold">
+              Navigation Menu
+            </div>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
+                  className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400 border border-transparent hover:border-cyan-500/20 transition-all text-left group cursor-pointer"
+                  data-testid={`mobile-nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform">
+                      <Icon size={18} />
+                    </span>
+                    <span className="font-['Outfit'] tracking-wide">{item.name}</span>
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">{item.label}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Drawer Footer Actions */}
+        <div className="pt-4 border-t border-slate-100 dark:border-white/10 space-y-2.5">
+          {/* WhatsApp Direct Chat */}
+          <a
+            href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services."
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMenu(false)}
+            className="w-full py-3 px-4 rounded-xl font-['Outfit'] font-bold text-xs uppercase tracking-wider bg-[#25D366] text-white shadow-md hover:bg-[#20bd5a] flex items-center justify-center gap-2 transition-all"
+            data-testid="mobile-whatsapp-btn"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-current" />
+            <span>WhatsApp: +91 87783 40454</span>
+          </a>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="#Contact"
+              onClick={(e) => handleNavClick(e, '#Contact')}
+              className="flex-1 py-3 px-4 rounded-xl font-['Outfit'] font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+              data-testid="mobile-partner-btn"
+            >
+              <span>Partner With Us</span>
+              <ArrowRight size={14} />
+            </a>
+
+            <Link
+              to="/admin"
+              onClick={() => setMenu(false)}
+              className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-cyan-500 transition-colors flex items-center justify-center"
+              title="Admin Portal"
+              data-testid="mobile-admin-btn"
+            >
+              <Shield size={16} />
+            </Link>
+          </div>
+        </div>
+      </aside>
 
       <main>
         
         {/* -------------------------------------------------------------
             SECTION 1: HERO SECTION (Digital Operations Universe + Image Showcase)
             ------------------------------------------------------------- */}
-        <section id="Home" className="relative min-h-screen flex flex-col justify-center items-center pt-28 pb-16 px-4 sm:px-6 md:px-12 overflow-hidden">
+        <section id="Home" className="relative min-h-screen flex flex-col justify-center items-center pt-28 pb-16 px-4 sm:px-6 md:px-12 overflow-hidden scroll-mt-20">
           
           {/* Generative Canvas Background */}
           <DigitalUniverseCanvas />
@@ -546,7 +638,8 @@ export default function PublicHome() {
               <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 <a 
                   href="#Contact" 
-                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-lg hover:shadow-cyan-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-center"
+                  onClick={(e) => handleNavClick(e, '#Contact')}
+                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 text-white shadow-lg hover:shadow-cyan-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-center cursor-pointer"
                   data-testid="hero-services-button"
                 >
                   Let’s Work Together <ArrowRight size={16} />
@@ -554,7 +647,8 @@ export default function PublicHome() {
 
                 <a 
                   href="#Services" 
-                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider border border-slate-300 dark:border-white/15 bg-white/70 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white backdrop-blur-xl transition-all flex items-center justify-center text-center"
+                  onClick={(e) => handleNavClick(e, '#Services')}
+                  className="px-8 py-4 rounded-full font-['Outfit'] font-bold text-sm uppercase tracking-wider border border-slate-300 dark:border-white/15 bg-white/70 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white backdrop-blur-xl transition-all flex items-center justify-center text-center cursor-pointer"
                   data-testid="hero-contact-button"
                 >
                   Explore Our Services
@@ -622,7 +716,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 2: ABOUT US (#About) — Editorial Split with CEO Photo
             ------------------------------------------------------------- */}
-        <section id="About" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
+        <section id="About" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10 scroll-mt-20">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -714,7 +808,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 3: SERVICES (#Services) — 6 Glassmorphism Panels
             ------------------------------------------------------------- */}
-        <section id="Services" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
+        <section id="Services" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10 scroll-mt-20">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-20">
@@ -803,7 +897,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 4: GALLERY (#Gallery) — Interactive Image Showcase
             ------------------------------------------------------------- */}
-        <section id="Gallery" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
+        <section id="Gallery" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10 scroll-mt-20">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -890,7 +984,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 6: PERFORMANCE (#Performance)
             ------------------------------------------------------------- */}
-        <section id="Performance" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10">
+        <section id="Performance" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/10 scroll-mt-20">
           <div className="max-w-7xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-20">
@@ -934,7 +1028,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 7: CAREERS (#Careers) — ATS Job Openings
             ------------------------------------------------------------- */}
-        <section id="Careers" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10">
+        <section id="Careers" className="relative py-20 sm:py-28 px-4 sm:px-6 md:px-12 bg-slate-50 dark:bg-[#030712] border-t border-slate-200 dark:border-white/10 scroll-mt-20">
           <div className="max-w-6xl mx-auto relative z-10">
             
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -993,7 +1087,7 @@ export default function PublicHome() {
         {/* -------------------------------------------------------------
             SECTION 8: CONTACT (#Contact)
             ------------------------------------------------------------- */}
-        <section id="Contact" className="relative py-20 sm:py-32 px-4 sm:px-6 md:px-12 bg-white dark:bg-black border-t border-slate-200 dark:border-white/10 text-center">
+        <section id="Contact" className="relative py-20 sm:py-32 px-4 sm:px-6 md:px-12 bg-white dark:bg-black border-t border-slate-200 dark:border-white/10 text-center scroll-mt-20">
           
           <div className="max-w-4xl mx-auto relative z-10">
             
@@ -1303,8 +1397,8 @@ export default function PublicHome() {
                 </span>
                 <a 
                   href="#Contact" 
-                  onClick={() => setSelectedService(null)} 
-                  className="px-5 py-2 rounded-full text-xs font-bold font-['Outfit'] uppercase bg-cyan-500 text-white hover:bg-cyan-600"
+                  onClick={(e) => { setSelectedService(null); handleNavClick(e, '#Contact'); }} 
+                  className="px-5 py-2 rounded-full text-xs font-bold font-['Outfit'] uppercase bg-cyan-500 text-white hover:bg-cyan-600 cursor-pointer"
                 >
                   Inquire Now →
                 </a>
