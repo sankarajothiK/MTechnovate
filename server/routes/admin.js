@@ -725,7 +725,9 @@ router.put('/company', requireAuth, uploadCompany.fields([
       address,
       email,
       phone,
+      whatsapp_number,
       social_linkedin,
+      social_instagram,
       social_twitter,
       social_github,
       about_text,
@@ -755,7 +757,9 @@ router.put('/company', requireAuth, uploadCompany.fields([
         address = ?,
         email = ?,
         phone = ?,
+        whatsapp_number = ?,
         social_linkedin = ?,
+        social_instagram = ?,
         social_twitter = ?,
         social_github = ?,
         about_text = ?,
@@ -766,22 +770,24 @@ router.put('/company', requireAuth, uploadCompany.fields([
     `);
 
     update.run(
-      company_name || current.company_name,
-      tagline || current.tagline,
-      ceo_name || current.ceo_name,
-      ceo_designation || current.ceo_designation,
+      company_name !== undefined ? company_name : current.company_name,
+      tagline !== undefined ? tagline : current.tagline,
+      ceo_name !== undefined ? ceo_name : current.ceo_name,
+      ceo_designation !== undefined ? ceo_designation : current.ceo_designation,
       ceoPhotoUrl,
-      ceo_message || current.ceo_message,
+      ceo_message !== undefined ? ceo_message : current.ceo_message,
       logoUrl,
-      address || current.address,
-      email || current.email,
-      phone || current.phone,
-      social_linkedin || current.social_linkedin,
-      social_twitter || current.social_twitter,
-      social_github || current.social_github,
-      about_text || current.about_text,
-      vision || current.vision,
-      mission || current.mission
+      address !== undefined ? address : current.address,
+      email !== undefined ? email : current.email,
+      phone !== undefined ? phone : current.phone,
+      whatsapp_number !== undefined ? whatsapp_number : current.whatsapp_number,
+      social_linkedin !== undefined ? social_linkedin : current.social_linkedin,
+      social_instagram !== undefined ? social_instagram : current.social_instagram,
+      social_twitter !== undefined ? social_twitter : current.social_twitter,
+      social_github !== undefined ? social_github : current.social_github,
+      about_text !== undefined ? about_text : current.about_text,
+      vision !== undefined ? vision : current.vision,
+      mission !== undefined ? mission : current.mission
     );
 
     const updated = db.prepare('SELECT * FROM company_profile WHERE id = 1').get();

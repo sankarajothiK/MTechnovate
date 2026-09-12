@@ -17,7 +17,9 @@ export default function AdminProfile() {
     address: '',
     email: '',
     phone: '',
+    whatsapp_number: '',
     social_linkedin: '',
+    social_instagram: '',
     social_twitter: '',
     social_github: '',
     about_text: '',
@@ -42,7 +44,9 @@ export default function AdminProfile() {
           address: res.data.address || '',
           email: res.data.email || '',
           phone: res.data.phone || '',
+          whatsapp_number: res.data.whatsapp_number || '',
           social_linkedin: res.data.social_linkedin || '',
+          social_instagram: res.data.social_instagram || '',
           social_twitter: res.data.social_twitter || '',
           social_github: res.data.social_github || '',
           about_text: res.data.about_text || '',
@@ -283,7 +287,7 @@ export default function AdminProfile() {
             <span>Headquarters & Contact Details</span>
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Registered Address *</label>
               <input
@@ -315,15 +319,37 @@ export default function AdminProfile() {
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyan-500"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">WhatsApp Number (e.g. 8778340454)</label>
+              <input
+                type="text"
+                value={formData.whatsapp_number}
+                onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value })}
+                placeholder="8778340454"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyan-500"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">LinkedIn URL</label>
               <input
                 type="url"
                 value={formData.social_linkedin}
                 onChange={(e) => setFormData({ ...formData, social_linkedin: e.target.value })}
+                placeholder="https://linkedin.com/..."
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Instagram URL</label>
+              <input
+                type="url"
+                value={formData.social_instagram}
+                onChange={(e) => setFormData({ ...formData, social_instagram: e.target.value })}
+                placeholder="https://instagram.com/..."
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyan-500"
               />
             </div>

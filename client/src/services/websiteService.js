@@ -57,8 +57,8 @@ export const websiteService = {
     const updates = {};
     const textFields = [
       'company_name', 'tagline', 'ceo_name', 'ceo_designation',
-      'ceo_message', 'address', 'email', 'phone',
-      'social_linkedin', 'social_twitter', 'social_github',
+      'ceo_message', 'address', 'email', 'phone', 'whatsapp_number',
+      'social_linkedin', 'social_instagram', 'social_twitter', 'social_github',
       'about_text', 'vision', 'mission'
     ];
 

@@ -29,7 +29,9 @@ function initSchema() {
       address TEXT NOT NULL,
       email TEXT NOT NULL,
       phone TEXT,
+      whatsapp_number TEXT,
       social_linkedin TEXT,
+      social_instagram TEXT,
       social_twitter TEXT,
       social_github TEXT,
       about_text TEXT,
@@ -146,6 +148,10 @@ function initSchema() {
     );
   `);
 
+  // Ensure new columns exist in existing database tables
+  try { db.exec("ALTER TABLE company_profile ADD COLUMN social_instagram TEXT;"); } catch (e) {}
+  try { db.exec("ALTER TABLE company_profile ADD COLUMN whatsapp_number TEXT;"); } catch (e) {}
+
   seedDefaultData();
 }
 
@@ -157,7 +163,7 @@ function seedDefaultData() {
       INSERT INTO company_profile (
         id, company_name, tagline, ceo_name, ceo_designation,
         ceo_photo, ceo_message, logo, address, email, phone,
-        social_linkedin, social_twitter, social_github,
+        whatsapp_number, social_linkedin, social_instagram, social_twitter, social_github,
         about_text, vision, mission, updated_at
       ) VALUES (
         1,
@@ -170,8 +176,10 @@ function seedDefaultData() {
         '/uploads/company/logo.jpg',
         'M.G.Complex, Busstand, Kadayam-627 415.',
         'mtechnovatesolutions@gmail.com',
-        '+91 94884 12345',
-        'https://linkedin.com/company/m-technovate-solutions',
+        '+91 87783 40454',
+        '8778340454',
+        'https://www.linkedin.com/in/ramesh-k-280420432/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B%2F%2FRyB1OzSBCev6A5OIGSjg%3D%3D',
+        'https://www.instagram.com/mtechnovatesolutions?stkn=MTg5dmt3cmhjMWN4Mw==',
         'https://twitter.com/mtechnovate',
         'https://github.com/m-technovate',
         'M TECHNOVATE SOLUTIONS is a premier non-IT global data technology, BPO, and document processing enterprise headquartered in Kadayam, Tamil Nadu. We specialize in high-precision data processing, USA documentation & vital records management, handwritten historical document indexing, EPUB conversion, and international back-office support for clients across USA, UK, Europe, Australia, and worldwide.',

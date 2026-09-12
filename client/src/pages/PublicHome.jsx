@@ -101,6 +101,30 @@ function resolveServiceIcon(icon) {
   return Layers;
 }
 
+function WhatsAppIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M17.47 14.38C17.17 14.23 15.69 13.5 15.42 13.4C15.14 13.3 14.94 13.25 14.74 13.55C14.54 13.85 13.96 14.53 13.78 14.73C13.61 14.93 13.43 14.96 13.13 14.81C12.83 14.66 11.86 14.34 10.71 13.31C9.81 12.51 9.21 11.53 9.03 11.23C8.86 10.93 9.01 10.76 9.17 10.61C9.3 10.48 9.47 10.26 9.62 10.09C9.77 9.91 9.82 9.79 9.92 9.59C10.02 9.38 9.97 9.21 9.9 9.06C9.82 8.91 9.22 7.42 8.97 6.82C8.73 6.23 8.48 6.31 8.29 6.3C8.12 6.29 7.92 6.29 7.72 6.29C7.52 6.29 7.19 6.37 6.92 6.67C6.64 6.97 5.86 7.7 5.86 9.18C5.86 10.67 6.94 12.1 7.09 12.3C7.24 12.5 9.21 15.54 12.23 16.85C12.95 17.16 13.51 17.34 13.95 17.48C14.67 17.71 15.33 17.68 15.85 17.6C16.43 17.51 17.63 16.87 17.88 16.17C18.13 15.47 18.13 14.87 18.06 14.74C17.98 14.61 17.78 14.54 17.47 14.38Z" />
+    </svg>
+  );
+}
+
+function LinkedInIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.25c-.95 0-1.72.78-1.72 1.73s.77 1.73 1.72 1.73 1.73-.78 1.73-1.73-.78-1.73-1.73Z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+    </svg>
+  );
+}
+
 const processSteps = [
   { step: '01', title: 'DISCOVER', desc: 'Deep intake analysis of operational bottlenecks, tech stack, and accuracy criteria.' },
   { step: '02', title: 'ANALYZE', desc: 'Telemetry mapping, volume modeling, and process re-engineering.' },
@@ -126,7 +150,10 @@ export default function PublicHome() {
       name: 'M TECHNOVATE SOLUTIONS',
       address: 'M.G.Complex, Busstand, Kadayam-627 415.',
       email: 'mtechnovatesolutions@gmail.com',
-      phone: '+91 94884 12345',
+      phone: '+91 87783 40454',
+      whatsapp_number: '8778340454',
+      social_linkedin: 'https://www.linkedin.com/in/ramesh-k-280420432/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B%2F%2FRyB1OzSBCev6A5OIGSjg%3D%3D',
+      social_instagram: 'https://www.instagram.com/mtechnovatesolutions?stkn=MTg5dmt3cmhjMWN4Mw==',
       ceo_name: 'RAMESH K',
       ceo_designation: 'Founder & Managing Director',
       ceo_photo: '/uploads/company/ceo_ramesh_k.jpg'
@@ -623,6 +650,21 @@ export default function PublicHome() {
                     “At M TECHNOVATE SOLUTIONS, founded in 2026, our mission is to deliver dependable, global-standard data operations with 99%+ accuracy, while creating empowering, sustainable career opportunities for skilled youth and women professionals right here in Kadayam.”
                   </blockquote>
 
+                  {/* Founder LinkedIn Connect */}
+                  <div className="mt-5 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-3">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">Executive Profile</span>
+                    <a
+                      href={c.social_linkedin || "https://www.linkedin.com/in/ramesh-k-280420432/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B%2F%2FRyB1OzSBCev6A5OIGSjg%3D%3D"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0A66C2]/15 hover:bg-[#0A66C2] text-[#0A66C2] hover:text-white border border-[#0A66C2]/30 text-xs font-semibold transition-all shadow-xs"
+                      title="Connect with RAMESH K on LinkedIn"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.25c-.95 0-1.72.78-1.72 1.73s.77 1.73 1.72 1.73 1.73-.78 1.73-1.73-.78-1.73-1.73Z"/></svg>
+                      <span>Connect on LinkedIn</span>
+                    </a>
+                  </div>
+
                 </div>
               </div>
 
@@ -998,6 +1040,42 @@ export default function PublicHome() {
               </form>
             </div>
 
+            {/* Direct Connect Quick Cards */}
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl mx-auto">
+              <a
+                href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all flex flex-col items-center text-center gap-1.5 group"
+              >
+                <WhatsAppIcon className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <span className="font-bold text-xs font-['Outfit']">WhatsApp Direct</span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">+91 87783 40454</span>
+              </a>
+
+              <a
+                href={c.social_linkedin || "https://www.linkedin.com/in/ramesh-k-280420432/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B%2F%2FRyB1OzSBCev6A5OIGSjg%3D%3D"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-all flex flex-col items-center text-center gap-1.5 group"
+              >
+                <LinkedInIcon className="w-5 h-5 text-[#0A66C2] group-hover:scale-110 transition-transform" />
+                <span className="font-bold text-xs font-['Outfit']">LinkedIn</span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">RAMESH K Profile</span>
+              </a>
+
+              <a
+                href={c.social_instagram || "https://www.instagram.com/mtechnovatesolutions?stkn=MTg5dmt3cmhjMWN4Mw=="}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-2xl bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 transition-all flex flex-col items-center text-center gap-1.5 group"
+              >
+                <InstagramIcon className="w-5 h-5 text-pink-500 group-hover:scale-110 transition-transform" />
+                <span className="font-bold text-xs font-['Outfit']">Instagram</span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">@mtechnovatesolutions</span>
+              </a>
+            </div>
+
           </div>
         </section>
 
@@ -1021,6 +1099,37 @@ export default function PublicHome() {
             <p className="text-slate-400 text-xs leading-relaxed max-w-md">
               “Innovate at every step” — Modern business process outsourcing, historical document archival, and global data operations center in Kadayam, Tamil Nadu.
             </p>
+
+            {/* Social Icons */}
+            <div className="flex items-center gap-3 mt-5">
+              <a
+                href={c.social_linkedin || "https://www.linkedin.com/in/ramesh-k-280420432/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B%2F%2FRyB1OzSBCev6A5OIGSjg%3D%3D"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#0A66C2] transition-colors"
+                title="LinkedIn Profile"
+              >
+                <LinkedInIcon className="w-4 h-4" />
+              </a>
+              <a
+                href={c.social_instagram || "https://www.instagram.com/mtechnovatesolutions?stkn=MTg5dmt3cmhjMWN4Mw=="}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 transition-colors"
+                title="Instagram Page"
+              >
+                <InstagramIcon className="w-4 h-4" />
+              </a>
+              <a
+                href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#25D366] transition-colors"
+                title="WhatsApp: +91 87783 40454"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+              </a>
+            </div>
           </div>
 
           <div>
@@ -1040,18 +1149,26 @@ export default function PublicHome() {
             <div className="font-mono text-xs uppercase tracking-widest text-white font-bold mb-4">
               HEADQUARTERS
             </div>
-            <div className="space-y-2 text-xs text-slate-300">
+            <div className="space-y-2.5 text-xs text-slate-300">
               <p className="flex items-start gap-2">
                 <MapPin size={14} className="text-cyan-400 mt-0.5 shrink-0" />
                 <span>{c.address}</span>
               </p>
               <p className="flex items-center gap-2">
                 <Mail size={14} className="text-cyan-400 shrink-0" />
-                <span>{c.email}</span>
+                <a href={`mailto:${c.email}`} className="hover:text-white transition-colors">{c.email}</a>
               </p>
               <p className="flex items-center gap-2">
                 <Phone size={14} className="text-cyan-400 shrink-0" />
-                <span>{c.phone}</span>
+                <a href={`tel:${(c.phone || '+918778340454').replace(/\s+/g, '')}`} className="hover:text-white transition-colors font-mono">
+                  {c.phone || '+91 87783 40454'}
+                </a>
+              </p>
+              <p className="flex items-center gap-2">
+                <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <a href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services." target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300 transition-colors font-mono font-semibold">
+                  WhatsApp: {c.whatsapp_number || '8778340454'}
+                </a>
               </p>
             </div>
           </div>
@@ -1060,7 +1177,13 @@ export default function PublicHome() {
 
         <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-slate-500">
           <div>© 2026 M TECHNOVATE SOLUTIONS. All rights reserved.</div>
-          <div>BUILT FOR SECURE, RESILIENT ENTERPRISE OPERATIONS.</div>
+          <div className="flex items-center gap-4">
+            <span>BUILT FOR SECURE, RESILIENT ENTERPRISE OPERATIONS.</span>
+            <Link to="/admin/login" className="inline-flex items-center gap-1 text-slate-600 hover:text-cyan-400 transition-colors">
+              <Shield size={11} />
+              <span>Admin Portal</span>
+            </Link>
+          </div>
         </div>
       </footer>
 
@@ -1161,6 +1284,26 @@ export default function PublicHome() {
           <JobModal job={selectedJob} close={() => setSelectedJob(null)} onApplied={loadData} />
         )}
       </AnimatePresence>
+
+      {/* -------------------------------------------------------------
+          FLOATING WHATSAPP BUTTON (Quick Contact)
+          ------------------------------------------------------------- */}
+      <a
+        href="https://wa.me/918778340454?text=Hello%20M%20TECHNOVATE%20SOLUTIONS%2C%20I%20would%20like%20to%20inquire%20about%20your%20services."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#25D366] text-white shadow-2xl hover:shadow-[#25D366]/50 hover:scale-105 active:scale-95 transition-all duration-300 group cursor-pointer border border-white/20"
+        aria-label="Chat with us on WhatsApp"
+        title="WhatsApp: +91 87783 40454"
+      >
+        <div className="relative flex items-center justify-center">
+          <WhatsAppIcon className="w-5 h-5 fill-current" />
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full animate-ping" />
+        </div>
+        <span className="hidden sm:inline font-['Outfit'] font-bold text-xs tracking-wide">
+          Chat on WhatsApp
+        </span>
+      </a>
 
     </div>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, Zap, Shield, HeartHandshake, Lightbulb, Quote, Globe, Compass, Target, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Award, Zap, Shield, HeartHandshake, Lightbulb, Quote, Globe, Compass, Target, Sparkles, CheckCircle2, Linkedin } from 'lucide-react';
 
 const pillars = [
   {
@@ -121,6 +121,16 @@ export default function About({ company }) {
                     <div className="text-xs font-bold text-indigo-600 mt-0.5">
                       {ceoDesignation}
                     </div>
+                    <a
+                      href={company?.social_linkedin || "https://www.linkedin.com/in/ramesh-k-280420432/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B%2F%2FRyB1OzSBCev6A5OIGSjg%3D%3D"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A66C2]/10 hover:bg-[#0A66C2] text-[#0A66C2] hover:text-white text-[11px] font-semibold transition-all border border-[#0A66C2]/20 shadow-xs"
+                      title="Connect with Ramesh K on LinkedIn"
+                    >
+                      <Linkedin className="w-3 h-3" />
+                      <span>Connect on LinkedIn</span>
+                    </a>
                   </div>
                 </div>
               </div>
