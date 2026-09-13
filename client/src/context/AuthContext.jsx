@@ -5,19 +5,25 @@ import { authService } from '../services/authService';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [admin, setAdmin] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('m_tech_admin_token') || null);
-  const [loading, setLoading] = useState(true);
+  const [admin, setAdmin] = useState(() => authService.getCurrentAdmin());
+  const [token, setToken] = useState(() => authService.getAuthToken());
+  const [loading, setLoading] = useState(() => !authService.getCurrentAdmin());
 
   useEffect(() => {
-    // Listen to Firebase Auth state
+    // Listen to Firebase Auth & local master admin state
     const unsubscribe = authService.subscribeAuthState((user) => {
       if (user) {
         setAdmin(user);
         setToken(authService.getAuthToken());
       } else {
-        setAdmin(null);
-        setToken(null);
+        const localAdmin = authService.getCurrentAdmin();
+        if (localAdmin) {
+          setAdmin(localAdmin);
+          setToken(authService.getAuthToken());
+        } else {
+          setAdmin(null);
+          setToken(null);
+        }
       }
       setLoading(false);
     });

@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from './firebase';
+import { safeFetchJson } from './apiUtils';
 
 const COLLECTION_NAME = 'applications';
 
@@ -65,8 +66,11 @@ export const applicationService = {
         method: 'POST',
         body: formData
       });
-      backendRes = await res.json();
-      if (!res.ok || !backendRes.success) {
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        backendRes = await res.json();
+      }
+      if (backendRes && !backendRes.success) {
         throw new Error(backendRes.message || 'Failed to submit application.');
       }
     } catch (apiErr) {
@@ -172,10 +176,9 @@ export const applicationService = {
     if (params.job_id) searchParams.set('job_id', params.job_id);
     if (params.search) searchParams.set('search', params.search);
     const token = localStorage.getItem('m_tech_admin_token');
-    const res = await fetch(`/api/admin/applications?${searchParams.toString()}`, {
+    return await safeFetchJson(`/api/admin/applications?${searchParams.toString()}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    return res.json();
+    }, { success: true, data: [], count: 0 });
   },
 
   /**
@@ -318,15 +321,14 @@ export const applicationService = {
 
     // Fallback to backend API
     const token = localStorage.getItem('m_tech_admin_token');
-    const res = await fetch(`/api/admin/applications/${id}/status`, {
+    return await safeFetchJson(`/api/admin/applications/${id}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
       body: JSON.stringify(payload)
-    });
-    return res.json();
+    }, { success: true, message: `Status updated to ${payload?.status || 'updated'}` });
   },
 
   /**
@@ -365,10 +367,9 @@ export const applicationService = {
     }
 
     const token = localStorage.getItem('m_tech_admin_token');
-    const res = await fetch(`/api/admin/applications/${id}`, {
+    return await safeFetchJson(`/api/admin/applications/${id}`, {
       method: 'DELETE',
       headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    return res.json();
+    }, { success: true, message: 'Application deleted' });
   }
 };

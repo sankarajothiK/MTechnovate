@@ -14,6 +14,10 @@ export default function AdminSettings() {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('SMTP mailer connection test requires active backend server.');
+      }
       const data = await res.json();
       if (data.success) {
         setTestStatus({ type: 'success', text: data.message });

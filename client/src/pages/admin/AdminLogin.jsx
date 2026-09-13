@@ -4,8 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { Shield, Lock, Mail, ArrowRight, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('admin@mtechnovate.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('admin@mtechnovatesolutions.com');
+  const [password, setPassword] = useState('Kramesh4325@');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -118,10 +118,6 @@ export default function AdminLogin() {
               </Link>
             </div>
 
-          </div>
-
-          <div className="mt-4 p-3 rounded-xl bg-slate-200/70 dark:bg-dark-900/60 border border-slate-300 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 text-center font-mono">
-            Default credentials: <span className="text-cyan-700 dark:text-cyan-300 font-semibold">admin@mtechnovate.com</span> / <span className="text-cyan-700 dark:text-cyan-300 font-semibold">admin123</span>
           </div>
         </div>
 

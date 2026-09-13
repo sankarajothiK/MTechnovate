@@ -10,7 +10,7 @@ import {
   Smile, Briefcase, Radio, Globe, Clock, Check, Star,
   Maximize2, Eye, Compass, Building2
 } from 'lucide-react';
-import { api, jobService, serviceService, galleryService, websiteService } from '../services/api';
+import { api, jobService, serviceService, galleryService, websiteService, DEFAULT_GALLERY_ITEMS } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import ThemeToggle from '../components/ThemeToggle';
 import DigitalUniverseCanvas from '../components/DigitalUniverseCanvas';
@@ -159,7 +159,7 @@ export default function PublicHome() {
       ceo_photo: '/uploads/company/ceo_ramesh_k.jpg'
     },
     services: [],
-    gallery: [],
+    gallery: DEFAULT_GALLERY_ITEMS || [],
     jobs: []
   });
 
@@ -232,7 +232,7 @@ export default function PublicHome() {
       setData(prev => ({
         company: compRes?.success && compRes.data ? sanitizeCompany({ ...prev.company, ...compRes.data }) : sanitizeCompany(prev.company),
         services: servRes?.success && servRes.data?.length ? servRes.data : prev.services,
-        gallery: galRes?.success && galRes.data?.length ? galRes.data : prev.gallery,
+        gallery: (galRes?.success && galRes.data?.length) ? galRes.data : (prev.gallery?.length ? prev.gallery : DEFAULT_GALLERY_ITEMS),
         jobs: jobsRes?.success && jobsRes.data?.length ? jobsRes.data : prev.jobs
       }));
     } catch (err) {
@@ -924,9 +924,13 @@ export default function PublicHome() {
                     data-testid={`gallery-image-${idx}`}
                   >
                     <img 
-                      src={g.image_url} 
+                      src={g.image_url || g.imageUrl || '/mtechnovate_office_building.jpg'} 
                       alt={g.title} 
                       className="w-full h-full object-cover transform group-hover:scale-108 transition-transform duration-500"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/mtechnovate_office_building.jpg';
+                      }}
                     />
 
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
@@ -1342,7 +1346,15 @@ export default function PublicHome() {
               </h3>
 
               <div className="aspect-[16/10] rounded-xl overflow-hidden bg-black mb-4">
-                <img src={selectedGallery.image_url} alt={selectedGallery.title} className="w-full h-full object-contain" />
+                <img 
+                  src={selectedGallery.image_url || selectedGallery.imageUrl || '/mtechnovate_office_building.jpg'} 
+                  alt={selectedGallery.title} 
+                  className="w-full h-full object-contain" 
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/mtechnovate_office_building.jpg';
+                  }}
+                />
               </div>
 
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">

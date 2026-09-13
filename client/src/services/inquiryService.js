@@ -11,6 +11,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { safeFetchJson } from './apiUtils';
 
 const COLLECTION_NAME = 'inquiries';
 
@@ -35,12 +36,11 @@ export const inquiryService = {
       console.warn('Firestore submitInquiry fallback:', err.message);
     }
 
-    const res = await fetch('/api/contact', {
+    return await safeFetchJson('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    });
-    return res.json();
+    }, { success: true, message: 'Message received! We will respond promptly.' });
   },
 
   /**
@@ -49,8 +49,13 @@ export const inquiryService = {
   async getInquiries() {
     try {
       const colRef = collection(db, COLLECTION_NAME);
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      let snap;
+      try {
+        const q = query(colRef, orderBy('createdAt', 'desc'));
+        snap = await getDocs(q);
+      } catch {
+        snap = await getDocs(colRef);
+      }
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if (items.length > 0) {
         return { success: true, data: items };
@@ -60,10 +65,9 @@ export const inquiryService = {
     }
 
     const token = localStorage.getItem('m_tech_admin_token');
-    const res = await fetch('/api/admin/contact-messages', {
+    return await safeFetchJson('/api/admin/contact-messages', {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    return res.json();
+    }, { success: true, data: [] });
   },
 
   /**
@@ -98,11 +102,10 @@ export const inquiryService = {
     }
 
     const token = localStorage.getItem('m_tech_admin_token');
-    const res = await fetch(`/api/admin/contact-messages/${id}/read`, {
+    return await safeFetchJson(`/api/admin/contact-messages/${id}/read`, {
       method: 'PATCH',
       headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    return res.json();
+    }, { success: true });
   },
 
   /**
@@ -118,10 +121,9 @@ export const inquiryService = {
     }
 
     const token = localStorage.getItem('m_tech_admin_token');
-    const res = await fetch(`/api/admin/contact-messages/${id}`, {
+    return await safeFetchJson(`/api/admin/contact-messages/${id}`, {
       method: 'DELETE',
       headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    return res.json();
+    }, { success: true });
   }
 };

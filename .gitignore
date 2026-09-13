@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 client/node_modules/
 package-lock.json.bak
@@ -29,3 +29,4 @@ yarn-error.log*
 .idea/
 .DS_Store
 Thumbs.db
+scratch/

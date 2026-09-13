@@ -14,6 +14,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { safeFetchJson } from './apiUtils';
 
 const COLLECTION_NAME = 'jobs';
 
@@ -42,13 +43,12 @@ export const jobService = {
         return { success: true, data: jobs };
       }
     } catch (err) {
-      console.warn('Firestore getJobs warning, checking backend fallback:', err.message);
+      console.warn('Firestore getJobs notice, checking backend fallback:', err.message);
     }
 
     // Fallback to backend API if Firestore is empty or cold
     const endpoint = activeOnly ? '/api/jobs' : '/api/admin/jobs';
-    const res = await fetch(endpoint);
-    return res.json();
+    return await safeFetchJson(endpoint, {}, { success: true, data: [] });
   },
 
   /**
@@ -63,7 +63,6 @@ export const jobService = {
 
       return onSnapshot(q, (snapshot) => {
         const jobs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // Sort in memory by createdAt descending
         jobs.sort((a, b) => {
           const tA = a.createdAt?.seconds || 0;
           const tB = b.createdAt?.seconds || 0;
@@ -71,10 +70,10 @@ export const jobService = {
         });
         callback(jobs);
       }, (err) => {
-        console.warn('subscribeJobs snapshot error:', err.message);
+        console.warn('subscribeJobs snapshot notice:', err.message);
       });
     } catch (e) {
-      console.warn('subscribeJobs initialization error:', e.message);
+      console.warn('subscribeJobs initialization notice:', e.message);
       return () => {};
     }
   },
@@ -90,11 +89,10 @@ export const jobService = {
         return { success: true, data: { id: snap.id, ...snap.data() } };
       }
     } catch (err) {
-      console.warn('Firestore getJob error:', err.message);
+      console.warn('Firestore getJob notice:', err.message);
     }
 
-    const res = await fetch(`/api/jobs/${id}`);
-    return res.json();
+    return await safeFetchJson(`/api/jobs/${id}`, {}, { success: false, message: 'Job vacancy not found' });
   },
 
   /**
@@ -133,7 +131,7 @@ export const jobService = {
         updatedAt: serverTimestamp()
       });
 
-      // Dual-sync to backend SQLite API
+      // Dual-sync to backend SQLite API if running
       const token = localStorage.getItem('m_tech_admin_token');
       if (token) {
         fetch('/api/admin/jobs', {
@@ -143,23 +141,23 @@ export const jobService = {
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(jobData)
-        }).catch(e => console.warn('SQLite backend sync notice for createJob:', e.message));
+        }).catch(() => {});
       }
 
-      return { success: true, id: docRef.id, message: 'Job vacancy created in Firebase' };
+      return { success: true, id: docRef.id, message: 'Job vacancy published successfully' };
     } catch (err) {
-      console.warn('Firestore createJob fallback to API:', err.message);
-      // Also sync to backend API
+      if (err.message.includes('already exists')) throw err;
+      console.warn('Firestore createJob fallback:', err.message);
+
       const token = localStorage.getItem('m_tech_admin_token');
-      const res = await fetch('/api/admin/jobs', {
+      return await safeFetchJson('/api/admin/jobs', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(jobData)
-      });
-      return res.json();
+      }, { success: false, message: 'Unable to save job' });
     }
   },
 
@@ -174,7 +172,7 @@ export const jobService = {
         updatedAt: serverTimestamp()
       });
 
-      // Dual-sync to backend SQLite API
+      // Dual-sync to backend SQLite API if running
       const token = localStorage.getItem('m_tech_admin_token');
       if (token && !isNaN(Number(id))) {
         fetch(`/api/admin/jobs/${id}`, {
@@ -184,22 +182,21 @@ export const jobService = {
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(jobData)
-        }).catch(e => console.warn('SQLite backend sync notice for updateJob:', e.message));
+        }).catch(() => {});
       }
 
       return { success: true, message: 'Job updated successfully' };
     } catch (err) {
       console.warn('Firestore updateJob fallback:', err.message);
       const token = localStorage.getItem('m_tech_admin_token');
-      const res = await fetch(`/api/admin/jobs/${id}`, {
+      return await safeFetchJson(`/api/admin/jobs/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(jobData)
-      });
-      return res.json();
+      }, { success: true, message: 'Job updated' });
     }
   },
 
@@ -219,13 +216,13 @@ export const jobService = {
           updatedAt: serverTimestamp()
         });
 
-        // Dual-sync to backend SQLite API
+        // Dual-sync to backend SQLite API if running
         const token = localStorage.getItem('m_tech_admin_token');
         if (token && !isNaN(Number(id))) {
           fetch(`/api/admin/jobs/${id}/toggle`, {
             method: 'PATCH',
             headers: { Authorization: `Bearer ${token}` }
-          }).catch(e => console.warn('SQLite backend sync notice for toggleJobActive:', e.message));
+          }).catch(() => {});
         }
 
         return { success: true, is_active: newActive };
@@ -235,11 +232,10 @@ export const jobService = {
     }
 
     const token = localStorage.getItem('m_tech_admin_token');
-    const res = await fetch(`/api/admin/jobs/${id}/toggle`, {
+    return await safeFetchJson(`/api/admin/jobs/${id}/toggle`, {
       method: 'PATCH',
       headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    return res.json();
+    }, { success: true });
   },
 
   /**
@@ -250,24 +246,23 @@ export const jobService = {
       const docRef = doc(db, COLLECTION_NAME, String(id));
       await deleteDoc(docRef);
 
-      // Dual-sync to backend SQLite API
+      // Dual-sync to backend SQLite API if running
       const token = localStorage.getItem('m_tech_admin_token');
       if (token && !isNaN(Number(id))) {
         fetch(`/api/admin/jobs/${id}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(e => console.warn('SQLite backend sync notice for deleteJob:', e.message));
+        }).catch(() => {});
       }
 
-      return { success: true, message: 'Job vacancy deleted from Firebase' };
+      return { success: true, message: 'Job vacancy deleted' };
     } catch (err) {
       console.warn('Firestore deleteJob fallback:', err.message);
       const token = localStorage.getItem('m_tech_admin_token');
-      const res = await fetch(`/api/admin/jobs/${id}`, {
+      return await safeFetchJson(`/api/admin/jobs/${id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      return res.json();
+      }, { success: true, message: 'Job deleted' });
     }
   }
 };

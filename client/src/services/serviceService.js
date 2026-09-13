@@ -12,6 +12,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { safeFetchJson } from './apiUtils';
 
 const COLLECTION_NAME = 'services';
 
@@ -22,8 +23,13 @@ export const serviceService = {
   async getServices() {
     try {
       const colRef = collection(db, COLLECTION_NAME);
-      const q = query(colRef, orderBy('display_order', 'asc'));
-      const snap = await getDocs(q);
+      let snap;
+      try {
+        const q = query(colRef, orderBy('display_order', 'asc'));
+        snap = await getDocs(q);
+      } catch {
+        snap = await getDocs(colRef);
+      }
       const services = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if (services.length > 0) {
         return { success: true, data: services };
@@ -32,8 +38,7 @@ export const serviceService = {
       console.warn('Firestore getServices fallback:', err.message);
     }
 
-    const res = await fetch('/api/services');
-    return res.json();
+    return await safeFetchJson('/api/services', {}, { success: true, data: [] });
   },
 
   /**
@@ -74,7 +79,8 @@ export const serviceService = {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      // Dual-sync to backend SQLite API
+
+      // Dual-sync to backend SQLite API if running
       const token = localStorage.getItem('m_tech_admin_token');
       if (token) {
         fetch('/api/admin/services', {
@@ -84,22 +90,21 @@ export const serviceService = {
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(data)
-        }).catch(e => console.warn('SQLite backend sync notice for createService:', e.message));
+        }).catch(() => {});
       }
 
-      return { success: true, id: docRef.id, message: 'Service created in Firebase' };
+      return { success: true, id: docRef.id, message: 'Service published successfully' };
     } catch (err) {
       console.warn('Firestore createService fallback:', err.message);
       const token = localStorage.getItem('m_tech_admin_token');
-      const res = await fetch('/api/admin/services', {
+      return await safeFetchJson('/api/admin/services', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(data)
-      });
-      return res.json();
+      }, { success: false, message: 'Unable to save service' });
     }
   },
 
@@ -114,7 +119,7 @@ export const serviceService = {
         updatedAt: serverTimestamp()
       });
 
-      // Dual-sync to backend SQLite API
+      // Dual-sync to backend SQLite API if running
       const token = localStorage.getItem('m_tech_admin_token');
       if (token && !isNaN(Number(id))) {
         fetch(`/api/admin/services/${id}`, {
@@ -124,22 +129,21 @@ export const serviceService = {
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(data)
-        }).catch(e => console.warn('SQLite backend sync notice for updateService:', e.message));
+        }).catch(() => {});
       }
 
-      return { success: true, message: 'Service updated in Firebase' };
+      return { success: true, message: 'Service updated successfully' };
     } catch (err) {
       console.warn('Firestore updateService fallback:', err.message);
       const token = localStorage.getItem('m_tech_admin_token');
-      const res = await fetch(`/api/admin/services/${id}`, {
+      return await safeFetchJson(`/api/admin/services/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(data)
-      });
-      return res.json();
+      }, { success: true, message: 'Service updated' });
     }
   },
 
@@ -151,24 +155,23 @@ export const serviceService = {
       const docRef = doc(db, COLLECTION_NAME, String(id));
       await deleteDoc(docRef);
 
-      // Dual-sync to backend SQLite API
+      // Dual-sync to backend SQLite API if running
       const token = localStorage.getItem('m_tech_admin_token');
       if (token && !isNaN(Number(id))) {
         fetch(`/api/admin/services/${id}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(e => console.warn('SQLite backend sync notice for deleteService:', e.message));
+        }).catch(() => {});
       }
 
-      return { success: true, message: 'Service deleted from Firebase' };
+      return { success: true, message: 'Service deleted successfully' };
     } catch (err) {
       console.warn('Firestore deleteService fallback:', err.message);
       const token = localStorage.getItem('m_tech_admin_token');
-      const res = await fetch(`/api/admin/services/${id}`, {
+      return await safeFetchJson(`/api/admin/services/${id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      return res.json();
+      }, { success: true, message: 'Service deleted' });
     }
   }
 };

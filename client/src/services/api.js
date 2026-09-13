@@ -12,6 +12,7 @@ import { serviceService } from './serviceService';
 import { websiteService } from './websiteService';
 import { inquiryService } from './inquiryService';
 import { settingsService } from './settingsService';
+import { safeFetchJson } from './apiUtils';
 
 export {
   authService,
@@ -23,6 +24,7 @@ export {
   inquiryService,
   settingsService
 };
+export { DEFAULT_GALLERY_ITEMS } from './galleryService';
 
 export const api = {
   // ==========================================
@@ -50,10 +52,9 @@ export const api = {
     if (admin) return { success: true, admin };
     const token = authService.getAuthToken();
     if (!token) throw new Error('Not authenticated');
-    const res = await fetch('/api/admin/me', {
+    return await safeFetchJson('/api/admin/me', {
       headers: { Authorization: `Bearer ${token}` }
-    });
-    return res.json();
+    }, { success: false, message: 'Not authenticated' });
   },
 
   // ==========================================
