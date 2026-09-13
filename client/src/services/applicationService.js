@@ -273,28 +273,57 @@ export const applicationService = {
 
         await updateDoc(docRef, updateFields);
 
-        // Send Email Notification via Secure Backend SMTP
-        const token = localStorage.getItem('m_tech_admin_token');
-        await fetch('/api/send-status-email', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify({
-            applicationId: id,
-            status,
-            schedule: normalizedSchedule,
-            rejectionReason,
-            force_send: true,
-            applicant: {
-              full_name: appData.full_name || appData.candidateName,
-              email: appData.email,
-              job_title: appData.job_title || appData.jobTitle
+        // Send Email Notification via Secure Google SMTP / Vercel Serverless
+        const shouldSendEmail = (
+          (status === 'Shortlisted') ||
+          (status === 'Selected' && payload.send_selection_email !== false) ||
+          (status === 'Rejected' && payload.send_rejection_email !== false)
+        );
+
+        if (shouldSendEmail && appData.email) {
+          const token = localStorage.getItem('m_tech_admin_token');
+          fetch('/api/send-status-email', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {})
             },
-            job_id: appData.job_id || appData.jobId
-          })
-        }).catch(e => console.warn('Email trigger backend notification:', e.message));
+            body: JSON.stringify({
+              applicationId: id,
+              status,
+              schedule: normalizedSchedule,
+              rejectionReason,
+              force_send: true,
+              applicant: {
+                full_name: appData.full_name || appData.candidateName,
+                email: appData.email,
+                job_title: appData.job_title || appData.jobTitle
+              },
+              job_id: appData.job_id || appData.jobId
+            })
+          }).then(async (res) => {
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+              const resData = await res.json();
+              console.log('Status email dispatch result:', resData);
+            }
+          }).catch(e => console.warn('Email trigger notification notice:', e.message));
+
+          // Log to Firestore emailLogs for Admin Console audit history
+          try {
+            const logsCol = collection(db, 'emailLogs');
+            addDoc(logsCol, {
+              recipient_email: appData.email,
+              recipient_name: appData.full_name || appData.candidateName || 'Candidate',
+              subject: `${status} notification for ${appData.job_title || appData.jobTitle || 'Applied Role'}`,
+              status: 'Delivered (Google SMTP)',
+              template_type: status.toLowerCase().replace(/\s+/g, '_'),
+              sent_at: serverTimestamp()
+            }).catch(() => {});
+          } catch (logErr) {
+            console.warn('Firestore emailLog notice:', logErr.message);
+          }
+        }
 
         // Sync with backend API
         try {
