@@ -232,7 +232,7 @@ export const applicationService = {
     try {
       const colRef = collection(db, COLLECTION_NAME);
       const snap = await getDocs(colRef);
-      let apps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let apps = snap.docs.map(d => ({ ...d.data(), id: d.id, firestoreId: d.id }));
 
       // In-memory sort by createdAt or applied_at descending
       apps.sort((a, b) => {
@@ -282,7 +282,7 @@ export const applicationService = {
     try {
       const colRef = collection(db, COLLECTION_NAME);
       return onSnapshot(colRef, (snapshot) => {
-        const apps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const apps = snapshot.docs.map(d => ({ ...d.data(), id: d.id, firestoreId: d.id }));
         apps.sort((a, b) => {
           const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (a.applied_at ? new Date(a.applied_at).getTime() : 0);
           const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (b.applied_at ? new Date(b.applied_at).getTime() : 0);
@@ -337,7 +337,20 @@ export const applicationService = {
     let docRef = doc(db, COLLECTION_NAME, String(id));
 
     try {
-      const snap = await getDoc(docRef);
+      let snap = await getDoc(docRef);
+      if (!snap.exists()) {
+        const allDocs = await getDocs(collection(db, COLLECTION_NAME));
+        const match = allDocs.docs.find(d => 
+          d.id === String(id) || 
+          String(d.data().id) === String(id) || 
+          String(d.data().sqlite_id) === String(id)
+        );
+        if (match) {
+          docRef = doc(db, COLLECTION_NAME, match.id);
+          snap = match;
+        }
+      }
+
       if (snap.exists()) {
         const appData = snap.data();
 
@@ -374,46 +387,48 @@ export const applicationService = {
           (status === 'Rejected' && payload.send_rejection_email !== false)
         );
 
-        if (shouldSendEmail && appData.email) {
-          const token = localStorage.getItem('m_tech_admin_token');
-          fetch('/api/send-status-email', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify({
-              applicationId: id,
-              status,
-              schedule: normalizedSchedule,
-              rejectionReason,
-              force_send: true,
-              applicant: {
-                full_name: appData.full_name || appData.candidateName,
-                email: appData.email,
-                job_title: appData.job_title || appData.jobTitle
+        const candidateEmail = (payload.email || appData.email || '').trim();
+        const candidateName = payload.full_name || appData.full_name || appData.candidateName || 'Candidate';
+        const candidateJob = payload.job_title || appData.job_title || appData.jobTitle || 'Applied Role';
+
+        if (shouldSendEmail && candidateEmail) {
+          try {
+            const emailRes = await fetch('/api/send-status-email', {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json'
               },
-              job_id: appData.job_id || appData.jobId
-            })
-          }).then(async (res) => {
-            const ct = res.headers.get('content-type') || '';
-            if (ct.includes('application/json')) {
-              const resData = await res.json();
-              console.log('Status email dispatch result:', resData);
-            }
-          }).catch(e => console.warn('Email trigger notification notice:', e.message));
+              body: JSON.stringify({
+                applicationId: docRef.id,
+                status,
+                schedule: normalizedSchedule,
+                rejectionReason,
+                force_send: true,
+                applicant: {
+                  full_name: candidateName,
+                  email: candidateEmail,
+                  job_title: candidateJob
+                },
+                job_id: appData.job_id || appData.jobId || ''
+              })
+            });
+            const emailData = await emailRes.json().catch(() => null);
+            console.log('Status email dispatch result:', emailData);
+          } catch (e) {
+            console.warn('Email trigger notification notice:', e.message);
+          }
 
           // Log to Firestore emailLogs for Admin Console audit history
           try {
             const logsCol = collection(db, 'emailLogs');
-            addDoc(logsCol, {
-              recipient_email: appData.email,
-              recipient_name: appData.full_name || appData.candidateName || 'Candidate',
-              subject: `${status} notification for ${appData.job_title || appData.jobTitle || 'Applied Role'}`,
+            await addDoc(logsCol, {
+              recipient_email: candidateEmail,
+              recipient_name: candidateName,
+              subject: `${status} notification for ${candidateJob}`,
               status: 'Delivered (Google SMTP)',
               template_type: status.toLowerCase().replace(/\s+/g, '_'),
               sent_at: serverTimestamp()
-            }).catch(() => {});
+            });
           } catch (logErr) {
             console.warn('Firestore emailLog notice:', logErr.message);
           }
@@ -421,6 +436,7 @@ export const applicationService = {
 
         // Sync with backend API
         try {
+          const token = localStorage.getItem('m_tech_admin_token');
           await fetch(`/api/admin/applications/${id}/status`, {
             method: 'PUT',
             headers: {
@@ -429,14 +445,19 @@ export const applicationService = {
             },
             body: JSON.stringify({
               ...payload,
-              email: appData.email,
-              full_name: appData.full_name || appData.candidateName,
-              job_title: appData.job_title || appData.jobTitle
+              email: candidateEmail,
+              full_name: candidateName,
+              job_title: candidateJob
             })
           }).catch(() => {});
         } catch {}
 
-        return { success: true, message: `Status updated to ${status}` };
+        return { 
+          success: true, 
+          message: shouldSendEmail && candidateEmail 
+            ? `Status updated to ${status} and notification email sent to ${candidateEmail}` 
+            : `Status updated to ${status}` 
+        };
       }
     } catch (err) {
       console.warn('Firestore updateApplicationStatus fallback:', err.message);

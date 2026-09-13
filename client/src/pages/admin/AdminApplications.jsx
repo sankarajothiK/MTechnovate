@@ -194,6 +194,9 @@ export default function AdminApplications() {
     try {
       const res = await api.updateApplicationStatus(shortlistModalApp.id, {
         status: 'Shortlisted',
+        email: shortlistModalApp.email,
+        full_name: shortlistModalApp.full_name || shortlistModalApp.candidateName,
+        job_title: shortlistModalApp.job_title || shortlistModalApp.jobTitle,
         ...scheduleData
       });
 
@@ -226,6 +229,9 @@ export default function AdminApplications() {
       const res = await api.updateApplicationStatus(selectionModalApp.id, {
         status: 'Selected',
         send_selection_email: sendSelectionEmail,
+        email: selectionModalApp.email,
+        full_name: selectionModalApp.full_name || selectionModalApp.candidateName,
+        job_title: selectionModalApp.job_title || selectionModalApp.jobTitle,
         ...selectionSchedule
       });
 
@@ -251,7 +257,10 @@ export default function AdminApplications() {
     try {
       const res = await api.updateApplicationStatus(rejectionModalApp.id, {
         status: 'Rejected',
-        send_rejection_email: sendRejectionEmail
+        send_rejection_email: sendRejectionEmail,
+        email: rejectionModalApp.email,
+        full_name: rejectionModalApp.full_name || rejectionModalApp.candidateName,
+        job_title: rejectionModalApp.job_title || rejectionModalApp.jobTitle
       });
 
       if (res.success) {
@@ -623,15 +632,28 @@ export default function AdminApplications() {
                       <td className="py-4 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            onClick={() => handleStatusChange(app, app.status === 'Selected' ? 'Selected' : (app.status === 'Shortlisted' ? 'Shortlisted' : 'Selected'))}
+                            className={`p-1.5 rounded-lg border transition-colors shadow-xs cursor-pointer ${
+                              app.status === 'Selected'
+                                ? 'bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-300 hover:bg-purple-100'
+                                : app.status === 'Shortlisted'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-100'
+                                : 'bg-white dark:bg-dark-950 border-slate-200 dark:border-slate-700/80 text-slate-500 hover:text-purple-600 hover:border-purple-500'
+                            }`}
+                            title={`Dispatch / Resend ${app.status === 'Selected' ? 'Offer' : (app.status === 'Shortlisted' ? 'Interview' : 'Selection')} Email`}
+                          >
+                            <Mail className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => setProfileApplicant(app)}
-                            className="p-1.5 rounded-lg bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-cyan-500 transition-colors shadow-xs"
+                            className="p-1.5 rounded-lg bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-cyan-500 transition-colors shadow-xs cursor-pointer"
                             title="View Full Profile"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteApp(app.id, app.full_name)}
-                            className="p-1.5 rounded-lg bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-700/80 text-slate-400 hover:text-red-500 hover:border-red-500/50 transition-colors shadow-xs"
+                            className="p-1.5 rounded-lg bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-700/80 text-slate-400 hover:text-red-500 hover:border-red-500/50 transition-colors shadow-xs cursor-pointer"
                             title="Delete Application"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1065,19 +1087,63 @@ export default function AdminApplications() {
               </div>
             )}
 
-            {/* Resume Button */}
-            {(profileApplicant.resume_data || profileApplicant.resume_url || profileApplicant.resumeUrl) && (
-              <div className="pt-2 flex items-center justify-between">
+            {/* Action Bar: Resume & ATS Decision */}
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              {(profileApplicant.resume_data || profileApplicant.resume_url || profileApplicant.resumeUrl) ? (
                 <button
                   type="button"
                   onClick={() => handleOpenResumePreview(profileApplicant)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs shadow-lg shadow-cyan-600/25 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs shadow-lg shadow-cyan-600/25 transition-all cursor-pointer"
                 >
                   <FileText className="w-4 h-4" />
-                  <span>Preview & Download Candidate Resume</span>
+                  <span>Preview & Download Resume</span>
+                </button>
+              ) : (
+                <span className="text-xs text-slate-400 italic">No resume attached</span>
+              )}
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const app = profileApplicant;
+                    setProfileApplicant(null);
+                    handleStatusChange(app, 'Shortlisted');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 text-xs font-semibold transition-colors cursor-pointer"
+                  title="Schedule Interview & Send Shortlist Email"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Interview</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const app = profileApplicant;
+                    setProfileApplicant(null);
+                    handleStatusChange(app, 'Selected');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 text-xs font-semibold transition-colors cursor-pointer"
+                  title="Issue Selection & Send Offer Email"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Send Offer</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const app = profileApplicant;
+                    setProfileApplicant(null);
+                    handleStatusChange(app, 'Rejected');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-100 text-xs font-semibold transition-colors cursor-pointer"
+                  title="Decline Candidate & Send Rejection Email"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  <span>Reject</span>
                 </button>
               </div>
-            )}
+            </div>
 
           </div>
         </div>

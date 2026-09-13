@@ -2,6 +2,7 @@ import {
   collection, 
   doc, 
   getDocs, 
+  getDoc,
   addDoc, 
   deleteDoc, 
   query, 
@@ -98,17 +99,21 @@ export const galleryService = {
         const items = snap.docs.map(d => {
           const data = d.data();
           return {
-            id: d.id,
             ...data,
+            id: d.id,
             image_url: data.image_url || data.imageUrl || '/mtechnovate_office_building.jpg',
             imageUrl: data.imageUrl || data.image_url || '/mtechnovate_office_building.jpg'
           };
         });
 
-        // Merge custom uploads first, followed by default showcase items
-        const customTitles = new Set(items.map(i => i.title));
-        const merged = [...items, ...DEFAULT_GALLERY_ITEMS.filter(def => !customTitles.has(def.title))];
-        return { success: true, data: merged };
+        // In-memory sort by createdAt descending if present
+        items.sort((a, b) => {
+          const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0;
+          const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0;
+          return tB - tA;
+        });
+
+        return { success: true, data: items };
       }
     } catch (err) {
       console.warn('Firestore getGallery notice:', err.message);
@@ -120,7 +125,7 @@ export const galleryService = {
       return backendData;
     }
 
-    // Guaranteed default showcase gallery
+    // Guaranteed default showcase gallery fallback only when database is empty
     return { success: true, data: DEFAULT_GALLERY_ITEMS };
   },
 
@@ -135,17 +140,20 @@ export const galleryService = {
           const items = snapshot.docs.map(d => {
             const data = d.data();
             return {
-              id: d.id,
               ...data,
+              id: d.id,
               image_url: data.image_url || data.imageUrl || '/mtechnovate_office_building.jpg',
               imageUrl: data.imageUrl || data.image_url || '/mtechnovate_office_building.jpg'
             };
           });
 
-          // Merge custom uploads first, followed by default showcase items
-          const customTitles = new Set(items.map(i => i.title));
-          const merged = [...items, ...DEFAULT_GALLERY_ITEMS.filter(def => !customTitles.has(def.title))];
-          callback(merged);
+          items.sort((a, b) => {
+            const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0;
+            const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0;
+            return tB - tA;
+          });
+
+          callback(items);
         } else {
           callback(DEFAULT_GALLERY_ITEMS);
         }
@@ -217,6 +225,28 @@ export const galleryService = {
    * Delete gallery item: removes from disk/backend if available, and deletes from Firestore
    */
   async deleteGalleryItem(id) {
+    try {
+      const colRef = collection(db, COLLECTION_NAME);
+      const docRef = doc(db, COLLECTION_NAME, String(id));
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        await deleteDoc(docRef);
+      } else {
+        const allSnap = await getDocs(colRef);
+        const match = allSnap.docs.find(d => 
+          d.id === String(id) || 
+          String(d.data().sqlite_id) === String(id) || 
+          String(d.data().id) === String(id) ||
+          d.data().title === String(id)
+        );
+        if (match) {
+          await deleteDoc(doc(db, COLLECTION_NAME, match.id));
+        }
+      }
+    } catch (err) {
+      console.warn('Firestore deleteGalleryItem notice:', err.message);
+    }
+
     // 1. Backend delete attempt
     try {
       const token = localStorage.getItem('m_tech_admin_token');
@@ -226,18 +256,6 @@ export const galleryService = {
       });
     } catch (e) {
       // ignore
-    }
-
-    // 2. Firestore delete
-    try {
-      const colRef = collection(db, COLLECTION_NAME);
-      const snap = await getDocs(colRef);
-      const targetDoc = snap.docs.find(d => d.id === String(id) || d.data().sqlite_id === Number(id));
-      if (targetDoc) {
-        await deleteDoc(doc(db, COLLECTION_NAME, targetDoc.id));
-      }
-    } catch (err) {
-      console.warn('Firestore deleteGalleryItem notice:', err.message);
     }
 
     return { success: true, message: 'Gallery item removed successfully' };
