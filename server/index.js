@@ -68,4 +68,22 @@ app.listen(PORT, () => {
   console.log(`  API Endpoint: http://localhost:${PORT}/api`);
   console.log(`  Uploads:      http://localhost:${PORT}/uploads`);
   console.log(`====================================================`);
+
+  // Automated Render Keep-Alive: Pings the service every 10 minutes to prevent the 15-minute idle sleep
+  const serviceUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVICE_URL;
+  if (serviceUrl) {
+    const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    setInterval(async () => {
+      try {
+        const pingUrl = `${serviceUrl}/api/health`;
+        const res = await fetch(pingUrl);
+        if (res.ok) {
+          console.log(`[Render Keep-Alive] Pinged ${pingUrl} successfully at ${new Date().toISOString()}`);
+        }
+      } catch (err) {
+        console.warn(`[Render Keep-Alive] Ping notification: ${err.message}`);
+      }
+    }, PING_INTERVAL);
+    console.log(`  Keep-Alive:   Active (Pinging ${serviceUrl}/api/health every 10 mins)`);
+  }
 });
