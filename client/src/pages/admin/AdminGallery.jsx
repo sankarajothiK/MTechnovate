@@ -4,6 +4,7 @@ import {
   AlertCircle, Loader2, Tag, X, Eye 
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { galleryService } from '../../services/galleryService';
 
 export default function AdminGallery() {
   const [gallery, setGallery] = useState([]);
@@ -30,6 +31,13 @@ export default function AdminGallery() {
 
   useEffect(() => {
     fetchGallery();
+    const unsub = galleryService.subscribeGallery?.((liveGallery) => {
+      if (Array.isArray(liveGallery)) {
+        setGallery(liveGallery);
+        setLoading(false);
+      }
+    });
+    return () => unsub?.();
   }, []);
 
   const handleFilesChange = (e) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Mail, Phone, Clock, Trash2, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { api } from '../../services/api';
+import { inquiryService } from '../../services/inquiryService';
 
 export default function AdminInquiries() {
   const [messages, setMessages] = useState([]);
@@ -20,6 +21,13 @@ export default function AdminInquiries() {
 
   useEffect(() => {
     fetchMessages();
+    const unsub = inquiryService.subscribeInquiries?.((liveMessages) => {
+      if (Array.isArray(liveMessages)) {
+        setMessages(liveMessages);
+        setLoading(false);
+      }
+    });
+    return () => unsub?.();
   }, []);
 
   const handleMarkRead = async (id) => {

@@ -73,6 +73,8 @@ export const api = {
   },
   updateApplicationStatus: (id, payload) => applicationService.updateApplicationStatus(id, payload),
   deleteApplication: (id) => applicationService.deleteApplication(id),
+  getResumeUrl: (app) => applicationService.getResumeUrl(app),
+  createResumeBlobUrl: (url) => applicationService.createResumeBlobUrl(url),
 
   // ==========================================
   // ADMIN JOB VACANCIES

@@ -50,6 +50,41 @@ export const DEFAULT_GALLERY_ITEMS = [
   }
 ];
 
+function compressImage(file, maxWidth = 1280, maxHeight = 900, quality = 0.8) {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined' || !file || typeof file !== 'object' || !file.name) {
+      return resolve(typeof file === 'string' ? file : '/mtechnovate_office_building.jpg');
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => resolve(e.target.result || '/mtechnovate_office_building.jpg');
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve('/mtechnovate_office_building.jpg');
+    reader.readAsDataURL(file);
+  });
+}
+
 export const galleryService = {
   /**
    * Fetch all gallery items with guaranteed resilience
@@ -57,13 +92,7 @@ export const galleryService = {
   async getGallery() {
     try {
       const colRef = collection(db, COLLECTION_NAME);
-      let snap;
-      try {
-        const q = query(colRef, orderBy('createdAt', 'desc'));
-        snap = await getDocs(q);
-      } catch {
-        snap = await getDocs(colRef);
-      }
+      const snap = await getDocs(colRef);
 
       if (!snap.empty) {
         const items = snap.docs.map(d => {
@@ -75,9 +104,11 @@ export const galleryService = {
             imageUrl: data.imageUrl || data.image_url || '/mtechnovate_office_building.jpg'
           };
         });
-        if (items.length > 0) {
-          return { success: true, data: items };
-        }
+
+        // Merge custom uploads first, followed by default showcase items
+        const customTitles = new Set(items.map(i => i.title));
+        const merged = [...items, ...DEFAULT_GALLERY_ITEMS.filter(def => !customTitles.has(def.title))];
+        return { success: true, data: merged };
       }
     } catch (err) {
       console.warn('Firestore getGallery notice:', err.message);
@@ -110,7 +141,11 @@ export const galleryService = {
               imageUrl: data.imageUrl || data.image_url || '/mtechnovate_office_building.jpg'
             };
           });
-          callback(items);
+
+          // Merge custom uploads first, followed by default showcase items
+          const customTitles = new Set(items.map(i => i.title));
+          const merged = [...items, ...DEFAULT_GALLERY_ITEMS.filter(def => !customTitles.has(def.title))];
+          callback(merged);
         } else {
           callback(DEFAULT_GALLERY_ITEMS);
         }
@@ -134,48 +169,17 @@ export const galleryService = {
     const title = isFormData ? (formData.get('title') || '') : (formData.title || '');
     const description = isFormData ? (formData.get('description') || '') : (formData.description || '');
 
-    // 1. Try backend upload if available
-    let backendResult = null;
+    // 1. Dual sync to backend if running
     try {
       const token = localStorage.getItem('m_tech_admin_token');
-      const res = await fetch('/api/admin/gallery', {
+      fetch('/api/admin/gallery', {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData
-      });
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        backendResult = await res.json();
-      }
-    } catch (apiErr) {
-      console.warn('Backend gallery upload bypassed for direct Firebase:', apiErr.message);
-    }
+      }).catch(() => {});
+    } catch {}
 
-    if (backendResult?.success && backendResult?.data) {
-      // Dual-sync backend result to Firestore
-      try {
-        const colRef = collection(db, COLLECTION_NAME);
-        const list = Array.isArray(backendResult.data) ? backendResult.data : [backendResult.data];
-        for (const item of list) {
-          await addDoc(colRef, {
-            title: item.title || title || 'Workplace Showcase',
-            description: description || '',
-            imageUrl: item.image_url,
-            image_url: item.image_url,
-            category: category || 'Corporate Facility',
-            sqlite_id: item.id || null,
-            status: 'active',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        }
-      } catch (fsErr) {
-        console.warn('Firestore sync notice:', fsErr.message);
-      }
-      return backendResult;
-    }
-
-    // 2. Direct client-side upload to Firebase Storage & Firestore (for Vercel / serverless)
+    // 2. Client-side compression and direct Firestore upload (100% reliable on Vercel)
     try {
       const colRef = collection(db, COLLECTION_NAME);
       const files = isFormData ? formData.getAll('images') : (formData.images || []);
@@ -183,28 +187,19 @@ export const galleryService = {
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        let fileUrl = '/mtechnovate_office_building.jpg';
-        try {
-          if (file && typeof file === 'object' && file.name) {
-            const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
-            await uploadBytes(storageRef, file);
-            fileUrl = await getDownloadURL(storageRef);
-          }
-        } catch (stErr) {
-          console.warn('Firebase Storage direct upload notice:', stErr.message);
-        }
+        const compressedUrl = await compressImage(file);
 
         const docRef = await addDoc(colRef, {
-          title: title || 'M TECHNOVATE Showcase',
+          title: title || 'M TECHNOVATE Workplace',
           description: description || '',
-          imageUrl: fileUrl,
-          image_url: fileUrl,
+          imageUrl: compressedUrl,
+          image_url: compressedUrl,
           category: category || 'Corporate Facility',
           status: 'active',
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
-        createdItems.push({ id: docRef.id, title, category, image_url: fileUrl });
+        createdItems.push({ id: docRef.id, title, category, image_url: compressedUrl });
       }
 
       return {

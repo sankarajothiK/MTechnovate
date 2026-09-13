@@ -4,6 +4,7 @@ import {
   getDocs, 
   getDoc, 
   addDoc, 
+  setDoc,
   updateDoc, 
   deleteDoc, 
   query, 
@@ -59,7 +60,27 @@ export const applicationService = {
       if (err.message.includes('already submitted')) throw err;
     }
 
-    // 2. Upload resume file & record via backend API (instantaneous multipart handling)
+    // 2. Read resume file as base64 data URL
+    const resumeFile = isFormData ? formData.get('resume') : formData.resume;
+    let resumeDataUrl = '';
+    let resumeFileName = '';
+    let resumeFileType = 'application/pdf';
+    if (resumeFile && typeof resumeFile === 'object' && resumeFile.name) {
+      resumeFileName = resumeFile.name;
+      resumeFileType = resumeFile.type || 'application/pdf';
+      try {
+        resumeDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(resumeFile);
+        });
+      } catch (fErr) {
+        console.warn('Error reading resume file:', fErr);
+      }
+    }
+
+    // Attempt backend upload if available (fire-and-forget sync)
     let backendRes = null;
     try {
       const res = await fetch('/api/applications', {
@@ -70,19 +91,11 @@ export const applicationService = {
       if (contentType.includes('application/json')) {
         backendRes = await res.json();
       }
-      if (backendRes && !backendRes.success) {
-        throw new Error(backendRes.message || 'Failed to submit application.');
-      }
-    } catch (apiErr) {
-      console.warn('Backend application submission error:', apiErr.message);
-      if (apiErr.message.includes('already submitted') || apiErr.message.includes('closed')) {
-        throw apiErr;
-      }
-    }
+    } catch {}
 
-    const resumeUrl = backendRes?.data?.resume_url || '';
+    const isLargeFile = resumeDataUrl.length > 800000;
+    const directResumeUrl = !isLargeFile ? resumeDataUrl : (backendRes?.data?.resume_url || '');
     const resolvedJobTitle = backendRes?.data?.job_title || job_title || 'Applied Vacancy';
-    const resolvedAppId = String(backendRes?.data?.id || backendRes?.applicationId || Date.now());
 
     // 3. Write document to Firestore so Admin ATS real-time listener updates live
     try {
@@ -101,8 +114,12 @@ export const applicationService = {
         portfolio_url: portfolio_url || '',
         skills: skills || '',
         experience: experience || '',
-        resume_url: resumeUrl,
-        resumeUrl,
+        resume_url: directResumeUrl,
+        resumeUrl: directResumeUrl,
+        resume_data: !isLargeFile ? resumeDataUrl : '',
+        resume_filename: resumeFileName || 'Candidate_Resume.pdf',
+        has_resume_chunks: isLargeFile,
+        total_chunks: isLargeFile ? Math.ceil(resumeDataUrl.length / (600 * 1024)) : 1,
         storagePath: '',
         status: 'New',
         applied_at: new Date().toISOString(),
@@ -116,6 +133,26 @@ export const applicationService = {
         updatedAt: serverTimestamp()
       });
 
+      // If large file, store chunks in Firestore resumeFiles collection
+      if (isLargeFile && resumeDataUrl) {
+        try {
+          const chunkSize = 600 * 1024;
+          const totalChunks = Math.ceil(resumeDataUrl.length / chunkSize);
+          for (let i = 0; i < totalChunks; i++) {
+            await setDoc(doc(db, 'resumeFiles', `${newDocRef.id}_${i}`), {
+              applicationId: newDocRef.id,
+              chunkIndex: i,
+              totalChunks,
+              chunk: resumeDataUrl.substring(i * chunkSize, (i + 1) * chunkSize),
+              fileName: resumeFileName,
+              fileType: resumeFileType
+            });
+          }
+        } catch (chunkErr) {
+          console.warn('Error saving resume chunks:', chunkErr);
+        }
+      }
+
       return {
         success: true,
         id: newDocRef.id,
@@ -128,6 +165,63 @@ export const applicationService = {
         return backendRes;
       }
       throw firestoreErr;
+    }
+  },
+
+  /**
+   * Resolve full viewable resume data (supports base64, chunked Firestore docs, or static url)
+   */
+  async getResumeUrl(app) {
+    if (!app) return '';
+    if (app.resume_data && app.resume_data.startsWith('data:')) {
+      return app.resume_data;
+    }
+    if (app.resume_url && app.resume_url.startsWith('data:')) {
+      return app.resume_url;
+    }
+    if (app.resumeUrl && app.resumeUrl.startsWith('data:')) {
+      return app.resumeUrl;
+    }
+    if (app.has_resume_chunks && app.total_chunks > 1) {
+      try {
+        const parts = [];
+        for (let i = 0; i < app.total_chunks; i++) {
+          const cSnap = await getDoc(doc(db, 'resumeFiles', `${app.id}_${i}`));
+          if (cSnap.exists()) {
+            parts.push(cSnap.data().chunk);
+          }
+        }
+        if (parts.length > 0) {
+          return parts.join('');
+        }
+      } catch (chunkErr) {
+        console.warn('Error fetching resume chunks:', chunkErr);
+      }
+    }
+    return app.resume_url || app.resumeUrl || '';
+  },
+
+  /**
+   * Helper to convert Base64 data URL to Blob URL for clean browser preview
+   */
+  createResumeBlobUrl(dataOrUrl) {
+    if (!dataOrUrl || !dataOrUrl.startsWith('data:')) {
+      return dataOrUrl || '';
+    }
+    try {
+      const parts = dataOrUrl.split(',');
+      const mime = parts[0].match(/:(.*?);/)?.[1] || 'application/pdf';
+      const bstr = atob(parts[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      const blob = new Blob([u8arr], { type: mime });
+      return URL.createObjectURL(blob);
+    } catch (err) {
+      console.warn('Error creating resume blob url:', err);
+      return dataOrUrl;
     }
   },
 

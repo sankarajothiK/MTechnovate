@@ -25,12 +25,12 @@ export const jobService = {
   async getJobs(activeOnly = false) {
     try {
       const colRef = collection(db, COLLECTION_NAME);
-      const q = activeOnly
-        ? query(colRef, where('is_active', '==', 1))
-        : query(colRef);
+      const snap = await getDocs(colRef);
+      let jobs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      const snap = await getDocs(q);
-      const jobs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (activeOnly) {
+        jobs = jobs.filter(j => j.is_active === 1 || j.is_active === true || j.status === 'active');
+      }
 
       // Sort in memory by createdAt descending to avoid composite index requirements
       jobs.sort((a, b) => {
@@ -57,15 +57,14 @@ export const jobService = {
   subscribeJobs(callback, activeOnly = false) {
     try {
       const colRef = collection(db, COLLECTION_NAME);
-      const q = activeOnly
-        ? query(colRef, where('is_active', '==', 1))
-        : query(colRef);
-
-      return onSnapshot(q, (snapshot) => {
-        const jobs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return onSnapshot(colRef, (snapshot) => {
+        let jobs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (activeOnly) {
+          jobs = jobs.filter(j => j.is_active === 1 || j.is_active === true || j.status === 'active');
+        }
         jobs.sort((a, b) => {
-          const tA = a.createdAt?.seconds || 0;
-          const tB = b.createdAt?.seconds || 0;
+          const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+          const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
           return tB - tA;
         });
         callback(jobs);

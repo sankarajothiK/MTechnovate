@@ -31,6 +31,14 @@ export const inquiryService = {
         is_read: 0,
         createdAt: serverTimestamp()
       });
+
+      // Dispatch alert email to business email in background
+      fetch('/api/send-inquiry-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).catch(e => console.warn('Inquiry email alert notice:', e.message));
+
       return { success: true, id: docRef.id, message: 'Message sent successfully! We will get in touch shortly.' };
     } catch (err) {
       console.warn('Firestore submitInquiry fallback:', err.message);
@@ -49,14 +57,13 @@ export const inquiryService = {
   async getInquiries() {
     try {
       const colRef = collection(db, COLLECTION_NAME);
-      let snap;
-      try {
-        const q = query(colRef, orderBy('createdAt', 'desc'));
-        snap = await getDocs(q);
-      } catch {
-        snap = await getDocs(colRef);
-      }
+      const snap = await getDocs(colRef);
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      items.sort((a, b) => {
+        const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        return tB - tA;
+      });
       if (items.length > 0) {
         return { success: true, data: items };
       }
@@ -76,9 +83,13 @@ export const inquiryService = {
   subscribeInquiries(callback) {
     try {
       const colRef = collection(db, COLLECTION_NAME);
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      return onSnapshot(q, (snapshot) => {
+      return onSnapshot(colRef, (snapshot) => {
         const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        items.sort((a, b) => {
+          const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+          const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+          return tB - tA;
+        });
         callback(items);
       }, (err) => {
         console.warn('subscribeInquiries error:', err.message);

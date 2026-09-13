@@ -4,6 +4,7 @@ import {
   Clock, DollarSign, Calendar, AlertCircle, CheckCircle2, Loader2, X 
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { jobService } from '../../services/jobService';
 
 export default function AdminJobs() {
   const [jobs, setJobs] = useState([]);
@@ -40,6 +41,13 @@ export default function AdminJobs() {
 
   useEffect(() => {
     fetchJobs();
+    const unsub = jobService.subscribeJobs?.((liveJobs) => {
+      if (Array.isArray(liveJobs)) {
+        setJobs(liveJobs);
+        setLoading(false);
+      }
+    }, false);
+    return () => unsub?.();
   }, []);
 
   const openCreateModal = () => {
